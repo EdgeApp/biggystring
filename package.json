@@ -2,7 +2,7 @@
   "name": "biggystring",
   "version": "1.0.1",
   "description": "Wrapper for bn.js to directly operate on strings as big numbers",
-  "module": "lib/index.js",
+  "main": "lib/index.js",
   "keywords": [
     "big",
     "number"
