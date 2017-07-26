@@ -2,7 +2,7 @@
   "name": "biggystring",
   "version": "1.0.0",
   "description": "Wrapper for bn.js to directly operate on strings as big numbers",
-  "main": "lib/index.js",
+  "module": "lib/index.js",
   "keywords": [
     "big",
     "number"
@@ -16,6 +16,11 @@
   "dependencies": {
     "bn.js": "^4.11.7"
   },
+  "files": [
+    "lib/*",
+    "package.json",
+    "readme.md"
+  ],
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-eslint": "^7.2.3",
@@ -34,11 +39,11 @@
   "scripts": {
     "flow": "flow",
     "babel": "babel src/ -d lib/",
-    "build": "npm run prepare && npm run flow",
+    "build": "npm run lint && npm run prepare && npm run flow",
     "cover": "nyc --reporter=lcov --reporter=text --reporter=html --extension .js npm test",
     "lint --fix": "standard '*.js' 'src/**/*.js' --fix",
     "lint": "standard '*.js' 'src/**/*.js'",
-    "prepare": "npm run lint && npm run babel",
+    "prepare": "npm run babel",
     "test": "npm run build && mocha"
   }
 }
