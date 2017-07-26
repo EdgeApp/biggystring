@@ -7,12 +7,12 @@ import { BN } from 'bn.js'
 function isHex (x:string) {
   if (
     x.startsWith('0x') ||
-    x.toLowerCase().contains('a') ||
-    x.toLowerCase().contains('b') ||
-    x.toLowerCase().contains('c') ||
-    x.toLowerCase().contains('d') ||
-    x.toLowerCase().contains('e') ||
-    x.toLowerCase().contains('f')
+    x.toLowerCase().includes('a') ||
+    x.toLowerCase().includes('b') ||
+    x.toLowerCase().includes('c') ||
+    x.toLowerCase().includes('d') ||
+    x.toLowerCase().includes('e') ||
+    x.toLowerCase().includes('f')
   ) {
     return true
   } else {
@@ -22,7 +22,7 @@ function isHex (x:string) {
 
 const bns = {
   add: (x:string, y:string, base:number = 10) => {
-    const xBase = isHex(x) ? 16 : 10
+    const xBase:number = isHex(x) ? 16 : 10
     const yBase = isHex(y) ? 16 : 10
     const xBN = new BN(x, xBase)
     const yBN = new BN(y, yBase)
@@ -49,17 +49,41 @@ const bns = {
     const yBN = new BN(y, yBase)
     return xBN.div(yBN).toString(base)
   },
-  iadd: (x:string, y:string, base:number = 10) => {
+  iadd: function (x:string, y:string, base:number = 10) {
     x = this.add(x, y, base)
   },
-  imul: (x:string, y:string, base:number = 10) => {
+  imul: function (x:string, y:string, base:number = 10) {
     x = this.mul(x, y, base)
   },
-  isub: (x:string, y:string, base:number = 10) => {
+  isub: function (x:string, y:string, base:number = 10) {
     x = this.sub(x, y, base)
   },
-  idiv: (x:string, y:string, base:number = 10) => {
+  idiv: function (x:string, y:string, base:number = 10) {
     x = this.div(x, y, base)
+  },
+  fixedToInt (x:string, multiplier:number) {
+    const pos = x.indexOf('.')
+    if (pos === -1) {
+      throw new Error('Invalid fixed point number')
+    }
+    // Make sure there is only one '.'
+    const lastPos = x.indexOf('.')
+    if (lastPos !== pos) {
+      throw new Error('Invalid fixed point number. Contains more than one decimal point')
+    }
+    const addZeros = multiplier - (x.length - pos - 1)
+    if (addZeros < 0) {
+      throw new Error('Multiplier too small to create integer')
+    }
+    let out = x
+    out.replace('.', '')
+    for (let n = 0; n < addZeros; n++) {
+      out += '0'
+    }
+    return out
+  },
+  intToFixed (x:string, divisor:number) {
+
   }
 }
 

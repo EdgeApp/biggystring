@@ -22,6 +22,7 @@
     "babel-preset-flow": "^6.23.0",
     "eslint-plugin-flowtype": "^2.34.1",
     "standard": "^10.0.2",
+    "mocha": "^3.1.2",
     "flow-bin": "^0.49.1"
   },
   "standard": {
