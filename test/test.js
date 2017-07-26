@@ -41,6 +41,102 @@ describe('sub', function () {
   })
 })
 
+describe('less than', function () {
+  it('15 < 20 = True', function () {
+    assert.equal(bs.lt('15', '20'), true)
+  })
+  it('20 < 15 = False', function () {
+    assert.equal(bs.lt('20', '15'), false)
+  })
+  it('20 < 20 = False', function () {
+    assert.equal(bs.lt('20', '20'), false)
+  })
+  it('Big num true', function () {
+    assert.equal(bs.lt('4321000000000000000000000000000000004320', '4321000000000000000000000000000000004321'), true)
+  })
+  it('Big num false', function () {
+    assert.equal(bs.lt('4321000000000000000000000000000000004322', '4321000000000000000000000000000000004321'), false)
+  })
+  it('Big num eq false', function () {
+    assert.equal(bs.lt('4321000000000000000000000000000000004322', '4321000000000000000000000000000000004322'), false)
+  })
+})
+
+describe('greater than', function () {
+  it('15 > 20 = false', function () {
+    assert.equal(bs.gt('15', '20'), false)
+  })
+  it('20 > 15 = true', function () {
+    assert.equal(bs.gt('20', '15'), true)
+  })
+  it('20 > 20 = false', function () {
+    assert.equal(bs.gt('20', '20'), false)
+  })
+  it('Big num false', function () {
+    assert.equal(bs.gt('4321000000000000000000000000000000004320', '4321000000000000000000000000000000004321'), false)
+  })
+  it('Big num true', function () {
+    assert.equal(bs.gt('4321000000000000000000000000000000004322', '4321000000000000000000000000000000004321'), true)
+  })
+  it('Big num eq false', function () {
+    assert.equal(bs.gt('4321000000000000000000000000000000004322', '4321000000000000000000000000000000004322'), false)
+  })
+})
+
+describe('less than equal', function () {
+  it('15 <= 20 = True', function () {
+    assert.equal(bs.lte('15', '20'), true)
+  })
+  it('20 <= 15 = False', function () {
+    assert.equal(bs.lte('20', '15'), false)
+  })
+  it('20 <= 20 = true', function () {
+    assert.equal(bs.lte('20', '20'), true)
+  })
+  it('Big num true', function () {
+    assert.equal(bs.lte('4321000000000000000000000000000000004320', '4321000000000000000000000000000000004321'), true)
+  })
+  it('Big num false', function () {
+    assert.equal(bs.lte('4321000000000000000000000000000000004322', '4321000000000000000000000000000000004321'), false)
+  })
+  it('Big num eq true', function () {
+    assert.equal(bs.lte('4321000000000000000000000000000000004322', '4321000000000000000000000000000000004322'), true)
+  })
+})
+
+describe('greater than equal', function () {
+  it('15 >= 20 = false', function () {
+    assert.equal(bs.gte('15', '20'), false)
+  })
+  it('20 >= 15 = true', function () {
+    assert.equal(bs.gte('20', '15'), true)
+  })
+  it('20 >= 20 = true', function () {
+    assert.equal(bs.gte('20', '15'), true)
+  })
+  it('Big num false', function () {
+    assert.equal(bs.gte('4321000000000000000000000000000000004320', '4321000000000000000000000000000000004321'), false)
+  })
+  it('Big num true', function () {
+    assert.equal(bs.gte('4321000000000000000000000000000000004322', '4321000000000000000000000000000000004321'), true)
+  })
+  it('Big num eq true', function () {
+    assert.equal(bs.gte('4321000000000000000000000000000000004322', '4321000000000000000000000000000000004322'), true)
+  })
+})
+
+describe('equal', function () {
+  it('15 == 20 = false', function () {
+    assert.equal(bs.eq('15', '20'), false)
+  })
+  it('20 == 15 = false', function () {
+    assert.equal(bs.eq('20', '15'), false)
+  })
+  it('20 == 20 = true', function () {
+    assert.equal(bs.eq('20', '20'), true)
+  })
+})
+
 describe('fixedToInt', function () {
   it('123456789.12345 12 => 12345671234500000', function () {
     assert.equal(bs.fixedToInt('123456789.12345', 12), '123456789123450000000')

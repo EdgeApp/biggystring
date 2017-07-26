@@ -71,7 +71,52 @@ const bns = {
     const out = xBN.div(yBN).toString(base)
     return base === 10 ? out : '0x' + out
   },
-  fixedToInt (n:number, multiplier:number) {
+  lt: (x:string, y:string) => {
+    const xBase = isHex(x) ? 16 : 10
+    const yBase = isHex(y) ? 16 : 10
+    x = cropHex(x)
+    y = cropHex(y)
+    const xBN = new BN(x, xBase)
+    const yBN = new BN(y, yBase)
+    return xBN.lt(yBN)
+  },
+  lte: (x:string, y:string) => {
+    const xBase = isHex(x) ? 16 : 10
+    const yBase = isHex(y) ? 16 : 10
+    x = cropHex(x)
+    y = cropHex(y)
+    const xBN = new BN(x, xBase)
+    const yBN = new BN(y, yBase)
+    return xBN.lte(yBN)
+  },
+  gt: (x:string, y:string) => {
+    const xBase = isHex(x) ? 16 : 10
+    const yBase = isHex(y) ? 16 : 10
+    x = cropHex(x)
+    y = cropHex(y)
+    const xBN = new BN(x, xBase)
+    const yBN = new BN(y, yBase)
+    return xBN.gt(yBN)
+  },
+  gte: (x:string, y:string) => {
+    const xBase = isHex(x) ? 16 : 10
+    const yBase = isHex(y) ? 16 : 10
+    x = cropHex(x)
+    y = cropHex(y)
+    const xBN = new BN(x, xBase)
+    const yBN = new BN(y, yBase)
+    return xBN.gte(yBN)
+  },
+  eq: (x:string, y:string) => {
+    const xBase = isHex(x) ? 16 : 10
+    const yBase = isHex(y) ? 16 : 10
+    x = cropHex(x)
+    y = cropHex(y)
+    const xBN = new BN(x, xBase)
+    const yBN = new BN(y, yBase)
+    return xBN.eq(yBN)
+  },
+  fixedToInt: (n:number, multiplier:number) => {
     const x = n.toString()
     const pos = x.indexOf('.')
     if (pos === -1) {
@@ -92,7 +137,7 @@ const bns = {
     }
     return out
   },
-  intToFixed (x:string, divisor:number) {
+  intToFixed: (x:string, divisor:number) => {
     if (x.length <= divisor) {
       const leftZeros = divisor - x.length
       let out = '.'
