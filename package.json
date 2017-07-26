@@ -1,6 +1,6 @@
 {
   "name": "biggystring",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Wrapper for bn.js to directly operate on strings as big numbers",
   "module": "lib/index.js",
   "keywords": [
