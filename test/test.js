@@ -1,8 +1,6 @@
 /**
  * Created by paul on 7/25/17.
  */
-// import assert from 'assert'
-// import bns from 'biggystring'
 
 const bs = require('../lib/index.js')
 const assert = require('assert')
@@ -43,3 +41,31 @@ describe('sub', function () {
   })
 })
 
+describe('fixedToInt', function () {
+  it('123456789.12345 12 => 12345671234500000', function () {
+    assert.equal(bs.fixedToInt('123456789.12345', 12), '123456789123450000000')
+  })
+  it('123456789.12345 3 => Error', function () {
+    assert.throws(() => {
+      bs.fixedToInt('123456789.12345', 3)
+    })
+  })
+})
+
+describe('intToFixed', function () {
+  it('12345678 12 => .000012345678', function () {
+    assert.equal(bs.intToFixed('12345678', 12), .000012345678)
+  })
+  it('12345678 8 => .12345678', function () {
+    assert.equal(bs.intToFixed('12345678', 8), .12345678)
+  })
+  it('12345678 4 => 1234.5678', function () {
+    assert.equal(bs.intToFixed('12345678', 4), 1234.5678)
+  })
+  it('123456789123456789 8 => 1234567891.23456789', function () {
+    assert.equal(bs.intToFixed('123456789123456789', 8), 1234567891.23456789)
+  })
+  it('123456789123456789 12 => 123456.7891234567', function () {
+    assert.equal(bs.intToFixed('123456789123456789', 12), 123456.7891234567)
+  })
+})

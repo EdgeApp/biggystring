@@ -4,6 +4,8 @@
 // @flow
 const BN = require('bn.js')
 
+const MAX_DECIMALS = 10
+
 function isHex (x:string) {
   if (
     x.startsWith('0x') ||
@@ -91,7 +93,22 @@ const bns = {
     return out
   },
   intToFixed (x:string, divisor:number) {
-
+    if (x.length <= divisor) {
+      const leftZeros = divisor - x.length
+      let out = '.'
+      for (let n = 0; n < leftZeros; n++) {
+        out += '0'
+      }
+      return parseFloat(out + x.substr(0, MAX_DECIMALS))
+    } else {
+      let cropRight = divisor - MAX_DECIMALS
+      if (cropRight < 0) cropRight = 0
+      let cropLeft = x.length - cropRight
+      let out = x.substr(0, cropLeft)
+      const decimalPos = x.length - divisor
+      out = out.substr(0, decimalPos) + '.' + out.substr(decimalPos)
+      return parseFloat(out)
+    }
   }
 }
 
