@@ -2,7 +2,7 @@
  * Created by paul on 7/25/17.
  */
 // @flow
-import { BN } from 'bn.js'
+const BN = require('bn.js')
 
 function isHex (x:string) {
   if (
@@ -49,19 +49,8 @@ const bns = {
     const yBN = new BN(y, yBase)
     return xBN.div(yBN).toString(base)
   },
-  iadd: function (x:string, y:string, base:number = 10) {
-    x = this.add(x, y, base)
-  },
-  imul: function (x:string, y:string, base:number = 10) {
-    x = this.mul(x, y, base)
-  },
-  isub: function (x:string, y:string, base:number = 10) {
-    x = this.sub(x, y, base)
-  },
-  idiv: function (x:string, y:string, base:number = 10) {
-    x = this.div(x, y, base)
-  },
-  fixedToInt (x:string, multiplier:number) {
+  fixedToInt (n:number, multiplier:number) {
+    const x = n.toString()
     const pos = x.indexOf('.')
     if (pos === -1) {
       throw new Error('Invalid fixed point number')
@@ -75,8 +64,7 @@ const bns = {
     if (addZeros < 0) {
       throw new Error('Multiplier too small to create integer')
     }
-    let out = x
-    out.replace('.', '')
+    let out = x.replace('.', '')
     for (let n = 0; n < addZeros; n++) {
       out += '0'
     }
@@ -87,4 +75,4 @@ const bns = {
   }
 }
 
-export default bns
+module.exports = bns
