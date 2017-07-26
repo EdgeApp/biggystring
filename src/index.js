@@ -20,34 +20,54 @@ function isHex (x:string) {
   }
 }
 
+function cropHex (x:string) {
+  return x.replace('0x', '')
+}
+
 const bns = {
   add: (x:string, y:string, base:number = 10) => {
+    if (base !== 10 && base !== 16) throw new Error('Unsupported base')
     const xBase:number = isHex(x) ? 16 : 10
     const yBase = isHex(y) ? 16 : 10
+    x = cropHex(x)
+    y = cropHex(y)
     const xBN = new BN(x, xBase)
     const yBN = new BN(y, yBase)
-    return xBN.add(yBN).toString(base)
+    const out = xBN.add(yBN).toString(base)
+    return base === 10 ? out : '0x' + out
   },
   mul: (x:string, y:string, base:number = 10) => {
+    if (base !== 10 && base !== 16) throw new Error('Unsupported base')
     const xBase = isHex(x) ? 16 : 10
     const yBase = isHex(y) ? 16 : 10
+    x = cropHex(x)
+    y = cropHex(y)
     const xBN = new BN(x, xBase)
     const yBN = new BN(y, yBase)
-    return xBN.mul(yBN).toString(base)
+    const out = xBN.mul(yBN).toString(base)
+    return base === 10 ? out : '0x' + out
   },
   sub: (x:string, y:string, base:number = 10) => {
+    if (base !== 10 && base !== 16) throw new Error('Unsupported base')
     const xBase = isHex(x) ? 16 : 10
     const yBase = isHex(y) ? 16 : 10
+    x = cropHex(x)
+    y = cropHex(y)
     const xBN = new BN(x, xBase)
     const yBN = new BN(y, yBase)
-    return xBN.sub(yBN).toString(base)
+    const out = xBN.sub(yBN).toString(base)
+    return base === 10 ? out : '0x' + out
   },
   div: (x:string, y:string, base:number = 10) => {
+    if (base !== 10 && base !== 16) throw new Error('Unsupported base')
     const xBase = isHex(x) ? 16 : 10
     const yBase = isHex(y) ? 16 : 10
+    x = cropHex(x)
+    y = cropHex(y)
     const xBN = new BN(x, xBase)
     const yBN = new BN(y, yBase)
-    return xBN.div(yBN).toString(base)
+    const out = xBN.div(yBN).toString(base)
+    return base === 10 ? out : '0x' + out
   },
   fixedToInt (n:number, multiplier:number) {
     const x = n.toString()
