@@ -32,8 +32,3 @@ Big number library using only strings as inputs and outputs
     console.log(bs.eq('32', '10')  // => 'False'
     console.log(bs.eq('32', '32')  // => 'True'
 
-### Utility conversions
-
-    console.log(bs.fixedToInt(12345.678, 10) // => '123456780000000'
-    console.log(bs.fixedToInt(12345.67890, 3) // => Error
-    console.log(bs.intToFixed('123456789012345', 8) // => 1234567.89012345
