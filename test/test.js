@@ -1,6 +1,7 @@
 /**
  * Created by paul on 7/25/17.
  */
+/* globals describe it */
 
 const { bns } = require('../lib/index.js')
 
@@ -151,10 +152,10 @@ describe('mulf', function () {
 
 describe('divf', function () {
   it('12345678 1000000000000 => .000012345678', function () {
-    assert.equal(bns.divf('12345678', '1000000000000'), .000012345678)
+    assert.equal(bns.divf('12345678', '1000000000000'), 0.000012345678)
   })
   it('12345678 100000000 => .12345678', function () {
-    assert.equal(bns.divf('12345678', '100000000'), .12345678)
+    assert.equal(bns.divf('12345678', '100000000'), 0.12345678)
   })
   it('12345678 1000 => 1234.5678', function () {
     assert.equal(bns.divf('12345678', '10000'), 1234.5678)
