@@ -143,15 +143,18 @@ function fixedToInt (n:number|string, multiplier:number):string {
   } else {
     throw new Error('Invalid input format')
   }
-  const pos = x.indexOf('.')
-  if (pos === -1) {
-    throw new Error('Invalid fixed point number')
+  let pos = x.indexOf('.')
+  if (pos !== -1) {
+    // Make sure there is only one '.'
+    let x2 = x.substr(0, pos) + x.substr(pos + 1)
+    const lastPos = x2.indexOf('.')
+    if (lastPos !== -1) {
+      throw new Error('Invalid fixed point number. Contains more than one decimal point')
+    }
+  } else {
+    pos = x.length - 1
   }
-  // Make sure there is only one '.'
-  const lastPos = x.indexOf('.')
-  if (lastPos !== pos) {
-    throw new Error('Invalid fixed point number. Contains more than one decimal point')
-  }
+
   const addZeros = multiplier - (x.length - pos - 1)
   if (addZeros < 0) {
     throw new Error('Multiplier too small to create integer')
