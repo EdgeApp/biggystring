@@ -124,6 +124,38 @@ function eq (x:string, y:string):string {
   return xBN.eq(yBN)
 }
 
+function min (x:string, y:string, base:number = 10):string {
+  const xBase = isHex(x) ? 16 : 10
+  const yBase = isHex(y) ? 16 : 10
+  x = cropHex(x)
+  y = cropHex(y)
+  const xBN = new BN(x, xBase)
+  const yBN = new BN(y, yBase)
+  let out
+  if (xBN.lte(yBN)) {
+    out = xBN.toString(base)
+  } else {
+    out = yBN.toString(base)
+  }
+  return base === 10 ? out : '0x' + out
+}
+
+function max (x:string, y:string, base:number = 10):string {
+  const xBase = isHex(x) ? 16 : 10
+  const yBase = isHex(y) ? 16 : 10
+  x = cropHex(x)
+  y = cropHex(y)
+  const xBN = new BN(x, xBase)
+  const yBN = new BN(y, yBase)
+  let out
+  if (xBN.gte(yBN)) {
+    out = xBN.toString(base)
+  } else {
+    out = yBN.toString(base)
+  }
+  return base === 10 ? out : '0x' + out
+}
+
 function divf (x:string, y:string):number {
   const shift = log10(y)
   return intToFixed(x, shift)
@@ -198,6 +230,6 @@ function log10 (x:string):number {
   return (x.match(/0/g) || []).length
 }
 
-const bns = { add, sub, mul, div, gt, lt, gte, lte, eq, mulf, divf }
+const bns = { add, sub, mul, div, gt, lt, gte, lte, eq, mulf, divf, min, max }
 
-export { add, sub, mul, div, gt, lt, gte, lte, eq, mulf, divf, bns }
+export { add, sub, mul, div, gt, lt, gte, lte, eq, mulf, divf, min, max, bns }

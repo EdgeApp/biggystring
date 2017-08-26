@@ -178,6 +178,55 @@ describe('divf', function () {
   })
 })
 
+describe('max', function () {
+  it('max(100, 1000) => 1000', function () {
+    assert.equal(bns.max('100', '1000'), '1000')
+  })
+  it('max(2000, 100) => 2000', function () {
+    assert.equal(bns.max('2000', '100'), '2000')
+  })
+  it('max(3000, 3000) => 3000', function () {
+    assert.equal(bns.max('3000', '3000'), '3000')
+  })
+  it('max(0x100, 255) => 256', function () {
+    assert.equal(bns.max('0x100', '255'), '256')
+  })
+  it('max(255, 0x100) => 256', function () {
+    assert.equal(bns.max('255', '0x100'), '256')
+  })
+  it('max(257, 0x100, 16) => 0x101', function () {
+    assert.equal(bns.max('257', '0x100', 16), '0x101')
+  })
+  it('very big num', function () {
+    assert.equal(bns.max('9876000000000000000000000000000000000002', '9876000000000000000000000000000000000001'), '9876000000000000000000000000000000000002')
+  })
+})
+
+describe('min', function () {
+  it('min(100, 1000) => 100', function () {
+    assert.equal(bns.min('100', '1000'), '100')
+  })
+  it('min(2000, 100) => 100', function () {
+    assert.equal(bns.min('1000', '100'), '100')
+  })
+  it('min(3000, 3000) => 3000', function () {
+    assert.equal(bns.min('3000', '3000'), '3000')
+  })
+  it('min(0x100, 255) => 255', function () {
+    assert.equal(bns.min('0x100', '255'), '255')
+  })
+  it('min(255, 0x100) => 255', function () {
+    assert.equal(bns.min('255', '0x100'), '255')
+  })
+  it('min(257, 0x100, 16) => 0x100', function () {
+    assert.equal(bns.min('257', '0x100', 16), '0x100')
+  })
+  it('very big num', function () {
+    assert.equal(bns.min('9876000000000000000000000000000000000002', '9876000000000000000000000000000000000001'), '9876000000000000000000000000000000000001')
+  })
+})
+
+
 // describe('log10', function () {
 //   it('100 => 2', function () {
 //     assert.equal(bns.log10('100'), 2)
