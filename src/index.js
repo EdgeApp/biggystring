@@ -74,7 +74,7 @@ function div (x:string, y:string, base:number = 10):string {
   return base === 10 ? out : '0x' + out
 }
 
-function lt (x:string, y:string):string {
+function lt (x:string, y:string):boolean {
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
@@ -84,7 +84,7 @@ function lt (x:string, y:string):string {
   return xBN.lt(yBN)
 }
 
-function lte (x:string, y:string):string {
+function lte (x:string, y:string):boolean {
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
@@ -94,7 +94,7 @@ function lte (x:string, y:string):string {
   return xBN.lte(yBN)
 }
 
-function gt (x:string, y:string):string {
+function gt (x:string, y:string):boolean {
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
@@ -104,7 +104,7 @@ function gt (x:string, y:string):string {
   return xBN.gt(yBN)
 }
 
-function gte (x:string, y:string):string {
+function gte (x:string, y:string):boolean {
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
@@ -114,7 +114,7 @@ function gte (x:string, y:string):string {
   return xBN.gte(yBN)
 }
 
-function eq (x:string, y:string):string {
+function eq (x:string, y:string):boolean {
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
