@@ -230,6 +230,6 @@ function log10 (x:string):number {
   return (x.match(/0/g) || []).length
 }
 
-const bns = { add, sub, mul, div, gt, lt, gte, lte, eq, mulf, divf, min, max }
+const bns = { add, sub, mul, div, gt, lt, gte, lte, eq, mulf, divf, min, max, log10 }
 
-export { add, sub, mul, div, gt, lt, gte, lte, eq, mulf, divf, min, max, bns }
+export { add, sub, mul, div, gt, lt, gte, lte, eq, mulf, divf, min, max, log10, bns }
