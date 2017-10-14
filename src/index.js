@@ -26,55 +26,174 @@ function cropHex (x:string) {
   return x.replace('0x', '')
 }
 
-function add (x:string, y:string, base:number = 10):string {
-  if (base !== 10 && base !== 16) throw new Error('Unsupported base')
-  const xBase:number = isHex(x) ? 16 : 10
-  const yBase = isHex(y) ? 16 : 10
-  x = cropHex(x)
-  y = cropHex(y)
-  const xBN = new BN(x, xBase)
-  const yBN = new BN(y, yBase)
-  const out = xBN.add(yBN).toString(base)
-  return base === 10 ? out : '0x' + out
+type ShiftPair = {
+  shift: number,
+  x: string,
+  y: string
 }
 
-function mul (x:string, y:string, base:number = 10):string {
+function addZeros (val: string, numZeros: number) {
+  let out = val
+  for (let n = 0; n < numZeros; n++) {
+    out += '0'
+  }
+  return out
+}
+
+// Remove trailing zeros and decimal
+function trimEnd (val: string): string {
+  let out = val.replace(/^0+/, '')
+  out = out.replace(/^\.+/, '0.')
+  if (out.includes('.')) {
+    out = out.replace(/0+$/, '')
+    out = out.replace(/\.+$/, '')
+    if (out === '') {
+      out = '0'
+    }
+  }
+  return out
+}
+
+function addDecimal (x: string, shift: number) {
+  if (shift === 0) return x
+  if (shift > x.length) {
+    const out = '0.' + addZeros('', shift - x.length) + x
+    return trimEnd(out)
+  } else {
+    const out = x.substr(0, x.length - shift) + '.' + x.substr(x.length - shift, x.length)
+    return trimEnd(out)
+  }
+}
+// Takes two floating point (base 10) numbers and finds the multiplier needed to make them both
+// operable as a integer
+function floatShifts (xStart:string, yStart:string, moreShift?: number): ShiftPair {
+  let x = xStart
+  let y = yStart
+  validate(x, y)
+  let xPos:number = x.indexOf('.')
+  let yPos:number = y.indexOf('.')
+
+  const xHex:boolean = isHex(x)
+  const yHex:boolean = isHex(y)
+
+  if (xPos !== -1) {
+    // Remove trailing zeros
+    x = trimEnd(x)
+    xPos = x.indexOf('.')
+  }
+
+  if (yPos !== -1) {
+    // Remove trailing zeros
+    y = trimEnd(y)
+    yPos = y.indexOf('.')
+  }
+
+  if (xPos !== -1 || yPos !== -1 || typeof moreShift === 'number') {
+    if (xHex || yHex) {
+      throw new Error('Cannot operate on base16 float values')
+    }
+
+    let xShift = 0
+    let yShift = 0
+
+    if (xPos !== -1) {
+      xShift = x.length - xPos - 1
+    }
+
+    if (yPos !== -1) {
+      yShift = y.length - yPos - 1
+    }
+
+    let shift = (xShift > yShift ? xShift : yShift)
+    let moreS = 0
+    if (typeof moreShift === 'number') {
+      moreS = moreShift
+    }
+
+    x = addZeros(x.replace('.', ''), shift + moreS - xShift)
+    y = addZeros(y.replace('.', ''), shift - yShift)
+
+    const out: ShiftPair = { x, y, shift }
+
+    return out
+  } else {
+    // Both x and y are int and need no float conversion
+    const out: ShiftPair = {
+      x, y, shift: 0
+    }
+    return out
+  }
+}
+
+function validate (...args: Array<string>) {
+  for (const arg of args) {
+    if (arg.split('.').length - 1 > 1) {
+      throw new Error('Invalid number: more than one decimal point')
+    }
+    if (arg.split('-').length - 1 > 1) {
+      throw new Error('Invalid number: more than one negative sign')
+    }
+  }
+}
+
+function add (x1:string, y1:string, base:number = 10):string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
+  let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
   y = cropHex(y)
   const xBN = new BN(x, xBase)
   const yBN = new BN(y, yBase)
-  const out = xBN.mul(yBN).toString(base)
+  let out = xBN.add(yBN).toString(base)
+  out = addDecimal(out, shift)
   return base === 10 ? out : '0x' + out
 }
 
-function sub (x:string, y:string, base:number = 10):string {
+function mul (x1:string, y1:string, base:number = 10):string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
+  let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
   y = cropHex(y)
   const xBN = new BN(x, xBase)
   const yBN = new BN(y, yBase)
-  const out = xBN.sub(yBN).toString(base)
+  let out = xBN.mul(yBN).toString(base)
+  out = addDecimal(out, shift * 2)
   return base === 10 ? out : '0x' + out
 }
 
-function div (x:string, y:string, base:number = 10):string {
+function sub (x1:string, y1:string, base:number = 10):string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
+  let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
   y = cropHex(y)
   const xBN = new BN(x, xBase)
   const yBN = new BN(y, yBase)
-  const out = xBN.div(yBN).toString(base)
+  let out = xBN.sub(yBN).toString(base)
+  out = addDecimal(out, shift)
   return base === 10 ? out : '0x' + out
 }
 
-function lt (x:string, y:string):boolean {
+function div (x1:string, y1:string, base:number = 10, precision: number = 0):string {
+  if (base !== 10 && base !== 16) throw new Error('Unsupported base')
+  let { x, y } = floatShifts(x1, y1, precision)
+  const xBase = isHex(x) ? 16 : 10
+  const yBase = isHex(y) ? 16 : 10
+  x = cropHex(x)
+  y = cropHex(y)
+  const xBN = new BN(x, xBase)
+  const yBN = new BN(y, yBase)
+  let out = xBN.div(yBN).toString(base)
+  out = addDecimal(out, precision)
+  return base === 10 ? out : '0x' + out
+}
+
+function lt (x1:string, y1:string):boolean {
+  let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
@@ -84,7 +203,8 @@ function lt (x:string, y:string):boolean {
   return xBN.lt(yBN)
 }
 
-function lte (x:string, y:string):boolean {
+function lte (x1:string, y1:string):boolean {
+  let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
@@ -94,7 +214,8 @@ function lte (x:string, y:string):boolean {
   return xBN.lte(yBN)
 }
 
-function gt (x:string, y:string):boolean {
+function gt (x1:string, y1:string):boolean {
+  let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
@@ -104,7 +225,8 @@ function gt (x:string, y:string):boolean {
   return xBN.gt(yBN)
 }
 
-function gte (x:string, y:string):boolean {
+function gte (x1:string, y1:string):boolean {
+  let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
@@ -114,7 +236,8 @@ function gte (x:string, y:string):boolean {
   return xBN.gte(yBN)
 }
 
-function eq (x:string, y:string):boolean {
+function eq (x1:string, y1:string):boolean {
+  let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
@@ -124,7 +247,8 @@ function eq (x:string, y:string):boolean {
   return xBN.eq(yBN)
 }
 
-function min (x:string, y:string, base:number = 10):string {
+function min (x1:string, y1:string, base:number = 10):string {
+  let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
@@ -137,10 +261,12 @@ function min (x:string, y:string, base:number = 10):string {
   } else {
     out = yBN.toString(base)
   }
+  out = addDecimal(out, shift)
   return base === 10 ? out : '0x' + out
 }
 
-function max (x:string, y:string, base:number = 10):string {
+function max (x1:string, y1:string, base:number = 10):string {
+  let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
@@ -153,6 +279,7 @@ function max (x:string, y:string, base:number = 10):string {
   } else {
     out = yBN.toString(base)
   }
+  out = addDecimal(out, shift)
   return base === 10 ? out : '0x' + out
 }
 
@@ -187,15 +314,33 @@ function fixedToInt (n:number|string, multiplier:number):string {
     pos = x.length - 1
   }
 
-  const addZeros = multiplier - (x.length - pos - 1)
-  if (addZeros < 0) {
+  const numZerosAdd = multiplier - (x.length - pos - 1)
+  if (numZerosAdd < 0) {
     throw new Error('Multiplier too small to create integer')
   }
   let out = x.replace('.', '')
-  for (let n = 0; n < addZeros; n++) {
-    out += '0'
-  }
+
+  out = addZeros(out, numZerosAdd)
+
   return out
+}
+
+function toFixed (x1:string, precision: number) {
+  validate(x1)
+  let x = trimEnd(x1)
+
+  // Number of decimal places number has
+  const decimalPos = x.indexOf('.')
+  if (decimalPos === -1) {
+    return x + '.' + addZeros('', precision)
+  } else {
+    const numDecimals = x.length - decimalPos - 1
+    if (numDecimals > precision) {
+      return x.substr(0, x.length - (numDecimals - precision))
+    } else {
+      return x + addZeros('', precision - numDecimals)
+    }
+  }
 }
 
 function intToFixed (x:string, divisor:number):number {
@@ -230,6 +375,6 @@ function log10 (x:string):number {
   return (x.match(/0/g) || []).length
 }
 
-const bns = { add, sub, mul, div, gt, lt, gte, lte, eq, mulf, divf, min, max, log10 }
+const bns = { add, sub, mul, div, gt, lt, gte, lte, eq, mulf, divf, min, max, log10, toFixed }
 
-export { add, sub, mul, div, gt, lt, gte, lte, eq, mulf, divf, min, max, log10, bns }
+export { add, sub, mul, div, gt, lt, gte, lte, eq, mulf, divf, min, max, log10, toFixed, bns }

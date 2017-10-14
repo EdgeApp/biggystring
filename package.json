@@ -1,11 +1,12 @@
 {
   "name": "biggystring",
-  "version": "1.0.8",
-  "description": "Wrapper for bn.js to directly operate on strings as big numbers",
+  "version": "1.1.8",
+  "description": "Full floating point big number library using regular Javascript string",
   "keywords": [
     "big",
     "number",
-    "string"
+    "string",
+    "floating point"
   ],
   "homepage": "https://airbitz.co",
   "license": "ISC",
