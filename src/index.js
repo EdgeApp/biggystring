@@ -325,20 +325,22 @@ function fixedToInt (n:number|string, multiplier:number):string {
   return out
 }
 
-function toFixed (x1:string, precision: number) {
+function toFixed (x1:string, minPrecision: number = 2, maxPrecision: number = 8) {
   validate(x1)
   let x = trimEnd(x1)
 
   // Number of decimal places number has
   const decimalPos = x.indexOf('.')
   if (decimalPos === -1) {
-    return x + '.' + addZeros('', precision)
+    return x + '.' + addZeros('', minPrecision)
   } else {
     const numDecimals = x.length - decimalPos - 1
-    if (numDecimals > precision) {
-      return x.substr(0, x.length - (numDecimals - precision))
+    if (numDecimals > maxPrecision) {
+      return x.substr(0, x.length - (numDecimals - maxPrecision))
+    } else if (numDecimals < minPrecision) {
+      return x + addZeros('', minPrecision - numDecimals)
     } else {
-      return x + addZeros('', precision - numDecimals)
+      return x
     }
   }
 }

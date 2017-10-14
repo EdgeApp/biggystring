@@ -351,19 +351,28 @@ describe('toFixed', function () {
     assert.equal(bns.toFixed('100', 2), '100.00')
   })
   it('toFixed("100.123", 2) => 100.12', function () {
-    assert.equal(bns.toFixed('100.123', 2), '100.12')
+    assert.equal(bns.toFixed('100.123', 2), '100.123')
   })
   it('toFixed("00100.123", 2) => 100.12', function () {
-    assert.equal(bns.toFixed('100.123', 2), '100.12')
+    assert.equal(bns.toFixed('100.123', 2), '100.123')
   })
   it('toFixed("00100.12300", 2) => 100.12', function () {
-    assert.equal(bns.toFixed('100.123', 2), '100.12')
+    assert.equal(bns.toFixed('100.123', 2), '100.123')
   })
   it('toFixed("00100.12300", 2) => 100.12', function () {
-    assert.equal(bns.toFixed('100.123', 2), '100.12')
+    assert.equal(bns.toFixed('100.1', 2), '100.10')
   })
-  it('toFixed("00100", 5) => 100..00000', function () {
+  it('toFixed("00100", 5) => 100.00000', function () {
     assert.equal(bns.toFixed('00100', 5), '100.00000')
+  })
+  it('toFixed("00100.12345678", 5, 7) => 100.12345678', function () {
+    assert.equal(bns.toFixed('00100.12345678', 5, 7), '100.1234567')
+  })
+  it('toFixed("00100.12345678", 5, 8) => 100.1234568', function () {
+    assert.equal(bns.toFixed('00100.12345678', 5, 8), '100.12345678')
+  })
+  it('toFixed("00100.12345678", 5, 6) => 100.123456', function () {
+    assert.equal(bns.toFixed('00100.12345678', 5, 6), '100.123456')
   })
 })
 // describe('log10', function () {
