@@ -19,6 +19,9 @@ describe('add', function () {
   it('0x100 + 0x10 = 272', function () {
     assert.equal(bns.add('0x100', '0x10'), '272')
   })
+  it('0x100 + -0x10 = 240', function () {
+    assert.equal(bns.add('0x100', '-0x10'), '240')
+  })
   it('0x100 + 0x10 = 0x110', function () {
     assert.equal(bns.add('0x100', '0x10', 16), '0x110')
   })
@@ -27,6 +30,9 @@ describe('add', function () {
   })
   it('very big float', function () {
     assert.equal(bns.add('100000.1234000000000000000000000000000000001234', '4321000000000000000000000000000000004321.000001'), '4321000000000000000000000000000000104321.1234010000000000000000000000000000001234')
+  })
+  it('very big negative float', function () {
+    assert.equal(bns.add('1000000000000000001.9876000000000000000000000000000000009876', '-001.4321000000000000000000000000000000004321'), '1000000000000000000.5555000000000000000000000000000000005555')
   })
 })
 
@@ -40,8 +46,11 @@ describe('sub', function () {
   it('0x100 1 10 = 246', function () {
     assert.equal(bns.sub('0x100', '10'), '246')
   })
-  it('0x100 - 0x10 = 272', function () {
+  it('0x100 - 0x10 = 240', function () {
     assert.equal(bns.sub('0x100', '0x10'), '240')
+  })
+  it('0x100 - -0x10 = 272', function () {
+    assert.equal(bns.sub('0x100', '-0x10'), '272')
   })
   it('0x100 - 0x10 = 0xf0', function () {
     assert.equal(bns.sub('0x100', '0x10', 16), '0xf0')
@@ -240,50 +249,10 @@ describe('equal', function () {
   })
   it('123456789.12345 == 0x1001 => Error', function () {
     assert.throws(() => {
-      bns.mulf('123456789.12345', '0x1001')
+      bns.eq('123456789.12345', '0x1001')
     })
   })
 
-})
-
-describe('mulf', function () {
-  it('123456789.12345 1000000000000 => 12345671234500000', function () {
-    assert.equal(bns.mulf('123456789.12345', '1000000000000'), '123456789123450000000')
-  })
-  it('123456789 1000000000000 => 123456789000000000000', function () {
-    assert.equal(bns.mulf('123456789', '1000000000000'), '123456789000000000000')
-  })
-  it('123456789. 1000000000000 => 123456789000000000000', function () {
-    assert.equal(bns.mulf('123456789.', '1000000000000'), '123456789000000000000')
-  })
-  it('1234.56789.12345 1000 => Error', function () {
-    assert.throws(() => {
-      bns.mulf('1234.56789.12345', '1000')
-    })
-  })
-  it('123456789.12345 1000 => Error', function () {
-    assert.throws(() => {
-      bns.mulf('123456789.12345', '1000')
-    })
-  })
-})
-
-describe('divf', function () {
-  it('12345678 1000000000000 => .000012345678', function () {
-    assert.equal(bns.divf('12345678', '1000000000000'), .000012345678)
-  })
-  it('12345678 100000000 => .12345678', function () {
-    assert.equal(bns.divf('12345678', '100000000'), .12345678)
-  })
-  it('12345678 1000 => 1234.5678', function () {
-    assert.equal(bns.divf('12345678', '10000'), 1234.5678)
-  })
-  it('123456789123456789 100000000 => 1234567891.23456789', function () {
-    assert.equal(bns.divf('123456789123456789', '100000000'), 1234567891.23456789)
-  })
-  it('123456789123456789 1000000000000 => 123456.7891234567', function () {
-    assert.equal(bns.divf('123456789123456789', '1000000000000'), 123456.7891234567)
-  })
 })
 
 describe('max', function () {
@@ -346,6 +315,30 @@ describe('min', function () {
   })
 })
 
+describe('abs', function () {
+  it('abs("1") => "1")', function () {
+    assert.equal(bns.abs('1'), '1')
+  })
+  it('abs("-1") => "1")', function () {
+    assert.equal(bns.abs('-1'), '1')
+  })
+  it('abs("-1.123") => "1.123")', function () {
+    assert.equal(bns.abs('-1.123'), '1.123')
+  })
+  it('abs("-.123456789012345") => "0.123456789012345")', function () {
+    assert.equal(bns.abs('-.123456789012345'), '0.123456789012345')
+  })
+  it('abs(".123456789012345") => "0.123456789012345")', function () {
+    assert.equal(bns.abs('.123456789012345'), '0.123456789012345')
+  })
+  it('abs("-0x11") => "17")', function () {
+    assert.equal(bns.abs('-0x11'), '17')
+  })
+  it('abs("-0x11", 16) => "0x11")', function () {
+    assert.equal(bns.abs('-0x11', 16), '0x11')
+  })
+})
+
 describe('toFixed', function () {
   it('toFixed("100", 2) => 100.00', function () {
     assert.equal(bns.toFixed('100', 2), '100.00')
@@ -374,34 +367,44 @@ describe('toFixed', function () {
   it('toFixed("00100.12345678", 5, 6) => 100.123456', function () {
     assert.equal(bns.toFixed('00100.12345678', 5, 6), '100.123456')
   })
+  it('toFixed("1.0", 1, 6) => "1.0"', function () {
+    assert.equal(bns.toFixed('1.0', 1, 6), '1.0')
+  })
   it('toFixed("0", 0, 6) => "0"', function () {
     assert.equal(bns.toFixed('0', 0, 6), '0')
   })
   it('toFixed("00", 0, 6) => "0"', function () {
     assert.equal(bns.toFixed('00', 0, 6), '0')
   })
+  it('toFixed("-1.0", 1, 6) => "-1.0"', function () {
+    assert.equal(bns.toFixed('-1.0', 1, 6), '-1.0')
+  })
+  it('toFixed("-00100.12345678", 5, 6) => -100.123456', function () {
+    assert.equal(bns.toFixed('-00100.12345678', 5, 6), '-100.123456')
+  })
 })
-// describe('log10', function () {
-//   it('100 => 2', function () {
-//     assert.equal(bns.log10('100'), 2)
-//   })
-//   it('100000000000000000000 => 20', function () {
-//     assert.equal(bns.log10('100000000000000000000'), 20)
-//   })
-//   it('100000000000000001000 => Error', function () {
-//     assert.throws(() => {
-//       bns.log10('100000000000000001000')
-//     })
-//   })
-//   it('3000000000000000000 => Error', function () {
-//     assert.throws(() => {
-//       bns.log10('3000000000000000000')
-//     })
-//   })
-//   it('00100000000000000001000 => Error', function () {
-//     assert.throws(() => {
-//       bns.log10('00100000000000000001000')
-//     })
-//   })
-// })
-//
+
+describe('log10', function () {
+  it('100 => 2', function () {
+    assert.equal(bns.log10('100'), 2)
+  })
+  it('100000000000000000000 => 20', function () {
+    assert.equal(bns.log10('100000000000000000000'), 20)
+  })
+  it('100000000000000001000 => Error', function () {
+    assert.throws(() => {
+      bns.log10('100000000000000001000')
+    })
+  })
+  it('3000000000000000000 => Error', function () {
+    assert.throws(() => {
+      bns.log10('3000000000000000000')
+    })
+  })
+  it('00100000000000000001000 => Error', function () {
+    assert.throws(() => {
+      bns.log10('00100000000000000001000')
+    })
+  })
+})
+

@@ -4,11 +4,12 @@
 // @flow
 const BN = require('bn.js')
 
-const MAX_DECIMALS = 10
+// const MAX_DECIMALS = 10
 
 function isHex (x:string):boolean {
   if (
     x.startsWith('0x') ||
+    x.startsWith('-0x') ||
     x.toLowerCase().includes('a') ||
     x.toLowerCase().includes('b') ||
     x.toLowerCase().includes('c') ||
@@ -42,10 +43,6 @@ function addZeros (val: string, numZeros: number) {
 
 // Remove starting and trailing zeros and decimal
 function trimEnd (val: string): string {
-  // if (val === '0') {
-  //   return val
-  // }
-
   // Remove starting zeros if there are any
   let out = val.replace(/^0+/, '')
   out = out.replace(/^\.+/, '0.')
@@ -276,6 +273,17 @@ function min (x1:string, y1:string, base:number = 10):string {
   return base === 10 ? out : '0x' + out
 }
 
+function abs (x1:string, base:number = 10):string {
+  if (base !== 10 && base !== 16) throw new Error('Unsupported base')
+  let { x, shift } = floatShifts(x1, '0')
+  const xBase = isHex(x1) ? 16 : 10
+  x = cropHex(x)
+  const xBN = new BN(x, xBase)
+  let out = xBN.abs(xBN).toString(base)
+  out = addDecimal(out, shift)
+  return base === 10 ? out : '0x' + out
+}
+
 function max (x1:string, y1:string, base:number = 10):string {
   let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
@@ -294,89 +302,41 @@ function max (x1:string, y1:string, base:number = 10):string {
   return base === 10 ? out : '0x' + out
 }
 
-function divf (x:string, y:string):number {
-  const shift = log10(y)
-  return intToFixed(x, shift)
-}
-
-function mulf (x:number, y:string) {
-  const shift = log10(y)
-  return fixedToInt(x, shift)
-}
-
-function fixedToInt (n:number|string, multiplier:number):string {
-  let x
-  if (typeof n === 'number') {
-    x = n.toString()
-  } else if (typeof n === 'string') {
-    x = n
-  } else {
-    throw new Error('Invalid input format')
-  }
-  let pos = x.indexOf('.')
-  if (pos !== -1) {
-    // Make sure there is only one '.'
-    let x2 = x.substr(0, pos) + x.substr(pos + 1)
-    const lastPos = x2.indexOf('.')
-    if (lastPos !== -1) {
-      throw new Error('Invalid fixed point number. Contains more than one decimal point')
-    }
-  } else {
-    pos = x.length - 1
-  }
-
-  const numZerosAdd = multiplier - (x.length - pos - 1)
-  if (numZerosAdd < 0) {
-    throw new Error('Multiplier too small to create integer')
-  }
-  let out = x.replace('.', '')
-
-  out = addZeros(out, numZerosAdd)
-
-  return out
-}
-
 function toFixed (x1:string, minPrecision: number = 2, maxPrecision: number = 8) {
   validate(x1)
-  let x = trimEnd(x1)
+  let negative = false
+  let out = ''
+  let x = x1
+
+  if (x.includes('-')) {
+    negative = true
+    // Remove any leading '-' signs
+    x = x.replace(/^-+/, '')
+  }
+  x = trimEnd(x)
 
   // Number of decimal places number has
   const decimalPos = x.indexOf('.')
   if (decimalPos === -1) {
-    let out = x + '.' + addZeros('', minPrecision)
+    out = x + '.' + addZeros('', minPrecision)
 
     // Remove trailing "." if there is one
     out = out.replace(/\.+$/, '')
-    return out
   } else {
     const numDecimals = x.length - decimalPos - 1
     if (numDecimals > maxPrecision) {
-      return x.substr(0, x.length - (numDecimals - maxPrecision))
+      out = x.substr(0, x.length - (numDecimals - maxPrecision))
     } else if (numDecimals < minPrecision) {
-      return x + addZeros('', minPrecision - numDecimals)
+      out = x + addZeros('', minPrecision - numDecimals)
     } else {
-      return x
+      out = x
     }
   }
-}
 
-function intToFixed (x:string, divisor:number):number {
-  if (x.length <= divisor) {
-    const leftZeros = divisor - x.length
-    let out = '.'
-    for (let n = 0; n < leftZeros; n++) {
-      out += '0'
-    }
-    return parseFloat(out + x.substr(0, MAX_DECIMALS))
-  } else {
-    let cropRight = divisor - MAX_DECIMALS
-    if (cropRight < 0) cropRight = 0
-    let cropLeft = x.length - cropRight
-    let out = x.substr(0, cropLeft)
-    const decimalPos = x.length - divisor
-    out = out.substr(0, decimalPos) + '.' + out.substr(decimalPos)
-    return parseFloat(out)
+  if (negative) {
+    out = '-' + out
   }
+  return out
 }
 
 function log10 (x:string):number {
@@ -392,6 +352,6 @@ function log10 (x:string):number {
   return (x.match(/0/g) || []).length
 }
 
-const bns = { add, sub, mul, div, gt, lt, gte, lte, eq, mulf, divf, min, max, log10, toFixed }
+const bns = { add, sub, mul, div, gt, lt, gte, lte, eq, min, max, log10, toFixed, abs }
 
-export { add, sub, mul, div, gt, lt, gte, lte, eq, mulf, divf, min, max, log10, toFixed, bns }
+export { add, sub, mul, div, gt, lt, gte, lte, eq, min, max, log10, toFixed, abs, bns }
