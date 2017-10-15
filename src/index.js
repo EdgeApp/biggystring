@@ -40,16 +40,27 @@ function addZeros (val: string, numZeros: number) {
   return out
 }
 
-// Remove trailing zeros and decimal
+// Remove starting and trailing zeros and decimal
 function trimEnd (val: string): string {
+  // if (val === '0') {
+  //   return val
+  // }
+
+  // Remove starting zeros if there are any
   let out = val.replace(/^0+/, '')
   out = out.replace(/^\.+/, '0.')
   if (out.includes('.')) {
+    // Remove trailing zeros
     out = out.replace(/0+$/, '')
+
+    // Remove trailing "." if there is one
     out = out.replace(/\.+$/, '')
     if (out === '') {
       out = '0'
     }
+  }
+  if (out === '') {
+    out = '0'
   }
   return out
 }
@@ -332,7 +343,11 @@ function toFixed (x1:string, minPrecision: number = 2, maxPrecision: number = 8)
   // Number of decimal places number has
   const decimalPos = x.indexOf('.')
   if (decimalPos === -1) {
-    return x + '.' + addZeros('', minPrecision)
+    let out = x + '.' + addZeros('', minPrecision)
+
+    // Remove trailing "." if there is one
+    out = out.replace(/\.+$/, '')
+    return out
   } else {
     const numDecimals = x.length - decimalPos - 1
     if (numDecimals > maxPrecision) {

@@ -374,6 +374,12 @@ describe('toFixed', function () {
   it('toFixed("00100.12345678", 5, 6) => 100.123456', function () {
     assert.equal(bns.toFixed('00100.12345678', 5, 6), '100.123456')
   })
+  it('toFixed("0", 0, 6) => "0"', function () {
+    assert.equal(bns.toFixed('0', 0, 6), '0')
+  })
+  it('toFixed("00", 0, 6) => "0"', function () {
+    assert.equal(bns.toFixed('00', 0, 6), '0')
+  })
 })
 // describe('log10', function () {
 //   it('100 => 2', function () {
