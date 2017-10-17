@@ -92,7 +92,7 @@ describe('div', function () {
     assert.equal(bns.div('10', '3'), '3')
   })
   it('10 / 3 = 3.33333 (precision 5)', function () {
-    assert.equal(bns.div('10', '3', 10, 5), '3.33333')
+    assert.equal(bns.div('10', '3', 5), '3.33333')
   })
   it('very big num', function () {
     assert.equal(bns.div('400000000000000000000000000', '5'), '80000000000000000000000000')
@@ -100,11 +100,16 @@ describe('div', function () {
   it('very big float', function () {
     assert.equal(bns.div('800000000000000000000000000.0000000000000000008', '2'), '400000000000000000000000000')
   })
-  it('very big float (precision 9)', function () {
-    assert.equal(bns.div('800000000000000000000000000.000000008', '2', 10, 9), '400000000000000000000000000.000000004')
+  it('very big float (precision 9, base 10)', function () {
+    assert.equal(bns.div('800000000000000000000000000.000000008', '2', 9, 10), '400000000000000000000000000.000000004')
   })
   it('very small num', function () {
     assert.equal(bns.div('1234567890123456.123', '.00000000000000000000001'), '123456789012345612300000000000000000000')
+  })
+  it('Check error with hex output', function () {
+    assert.throws(() => {
+      const y = bns.div('10', '3', 5, 16)
+    })
   })
 })
 

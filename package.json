@@ -1,6 +1,6 @@
 {
   "name": "biggystring",
-  "version": "1.2.0",
+  "version": "3.0.0",
   "description": "Full floating point big number library using regular Javascript string",
   "keywords": [
     "big",

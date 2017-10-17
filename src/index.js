@@ -186,7 +186,10 @@ function sub (x1:string, y1:string, base:number = 10):string {
   return base === 10 ? out : '0x' + out
 }
 
-function div (x1:string, y1:string, base:number = 10, precision: number = 0):string {
+function div (x1:string, y1:string, precision: number = 0, base:number = 10):string {
+  if (base !== 10 && precision > 0) {
+    throw new Error('Cannot operate on floating point hex values')
+  }
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
   let { x, y } = floatShifts(x1, y1, precision)
   const xBase = isHex(x) ? 16 : 10
