@@ -387,6 +387,9 @@ describe('toFixed', function () {
   it('toFixed("-00100.12345678", 5, 6) => -100.123456', function () {
     assert.equal(bns.toFixed('-00100.12345678', 5, 6), '-100.123456')
   })
+  it('toFixed("-00100.12345678", 0, 0) => -100', function () {
+    assert.equal(bns.toFixed('-00100.12345678', 0, 0), '-100')
+  })
 })
 
 describe('log10', function () {

@@ -322,9 +322,6 @@ function toFixed (x1:string, minPrecision: number = 2, maxPrecision: number = 8)
   const decimalPos = x.indexOf('.')
   if (decimalPos === -1) {
     out = x + '.' + addZeros('', minPrecision)
-
-    // Remove trailing "." if there is one
-    out = out.replace(/\.+$/, '')
   } else {
     const numDecimals = x.length - decimalPos - 1
     if (numDecimals > maxPrecision) {
@@ -335,6 +332,9 @@ function toFixed (x1:string, minPrecision: number = 2, maxPrecision: number = 8)
       out = x
     }
   }
+
+  // Remove trailing "." if there is one
+  out = out.replace(/\.+$/, '')
 
   if (negative) {
     out = '-' + out
