@@ -64,13 +64,22 @@ function trimEnd (val: string): string {
 
 function addDecimal (x: string, shift: number) {
   if (shift === 0) return x
-  if (shift > x.length) {
-    const out = '0.' + addZeros('', shift - x.length) + x
-    return trimEnd(out)
-  } else {
-    const out = x.substr(0, x.length - shift) + '.' + x.substr(x.length - shift, x.length)
-    return trimEnd(out)
+  let isNegative = false
+  if (x.slice(0, 1) === '-') {
+    isNegative = true
+    x = x.slice(1)
   }
+  let out
+  if (shift > x.length) {
+    out = '0.' + addZeros('', shift - x.length) + x
+  } else {
+    out = x.substr(0, x.length - shift) + '.' + x.substr(x.length - shift, x.length)
+  }
+  out = trimEnd(out)
+  if (isNegative) {
+    out = `-${out}`
+  }
+  return out
 }
 // Takes two floating point (base 10) numbers and finds the multiplier needed to make them both
 // operable as a integer

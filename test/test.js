@@ -76,6 +76,9 @@ describe('mul', function () {
 })
 
 describe('div', function () {
+  it('-411 / 100000 = -0.00411', function () {
+    assert.equal(bns.div('-411', '100000', 18), '-0.00411')
+  })
   it('20 / 5 = 4', function () {
     assert.equal(bns.div('20', '5'), '4')
   })
