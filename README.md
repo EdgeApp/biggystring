@@ -25,12 +25,12 @@ Floating point big number library using only strings as inputs and outputs
 
 ### Comparisons
 
-    console.log(bs.gt('32', '10')  // => 'True'
-    console.log(bs.lt('32', '10')  // => 'False'
-    console.log(bs.gte('32', '32') // => 'True'
-    console.log(bs.lte('32', '10') // => 'False'
-    console.log(bs.eq('32', '10')  // => 'False'
-    console.log(bs.eq('32', '32')  // => 'True'
+    console.log(bs.gt('32', '10')  // => True
+    console.log(bs.lt('32', '10')  // => False
+    console.log(bs.gte('32', '32') // => True
+    console.log(bs.lte('32', '10') // => False
+    console.log(bs.eq('32', '10')  // => False
+    console.log(bs.eq('32', '32')  // => True
 
 ### Floating point operations (base 10 only)
 
