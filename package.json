@@ -8,28 +8,32 @@
     "string",
     "floating point"
   ],
-  "homepage": "https://airbitz.co",
+  "homepage": "https://edge.app",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:EdgeApp/biggystring.git"
+  },
   "license": "ISC",
   "author": "Airbitz, Inc.",
   "contributors": [
     "Paul Puey <paul@airbitz.co>"
   ],
+  "main": "./lib/index.js",
+  "module": "./lib/index.es.js",
   "files": [
     "lib/*",
     "package.json",
     "readme.md"
   ],
-  "main": "./lib/index.js",
-  "module": "./lib/index.es.js",
   "scripts": {
     "build": "rollup -c && flow-copy-source -v -i '**/test/**' src lib",
+    "cover": "nyc --reporter=lcov --reporter=text --reporter=html --extension .js npm test",
     "flow": "flow",
     "lint": "standard '*.js' 'src/**/*.js' && npm run flow",
     "lint --fix": "standard '*.js' 'src/**/*.js' --fix",
-    "test": "npm run lint && mocha",
     "precommit": "npm run build && npm test",
-    "cover": "nyc --reporter=lcov --reporter=text --reporter=html --extension .js npm test",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test": "npm run lint && mocha"
   },
   "dependencies": {
     "bn.js": "^4.11.7"
@@ -40,7 +44,7 @@
     "babel-preset-es2015-rollup": "^3.0.0",
     "babel-preset-flow": "^6.23.0",
     "eslint-plugin-flowtype": "^2.34.1",
-    "flow-bin": "^0.49.1",
+    "flow-bin": "^0.89.0",
     "flow-copy-source": "^1.2.1",
     "husky": "^0.14.3",
     "mocha": "^3.1.2",
