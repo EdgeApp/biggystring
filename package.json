@@ -8,7 +8,11 @@
     "string",
     "floating point"
   ],
-  "homepage": "https://airbitz.co",
+  "homepage": "https://edge.app",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:EdgeApp/biggystring.git"
+  },
   "license": "ISC",
   "author": "Airbitz, Inc.",
   "contributors": [
