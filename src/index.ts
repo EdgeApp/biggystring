@@ -1,12 +1,12 @@
 /**
  * Created by paul on 7/25/17.
  */
-// @flow
-const BN = require('bn.js')
+
+import BN from 'bn.js'
 
 // const MAX_DECIMALS = 10
 
-function isHex (x:string):boolean {
+function isHex(x: string): boolean {
   if (
     x.startsWith('0x') ||
     x.startsWith('-0x') ||
@@ -23,17 +23,17 @@ function isHex (x:string):boolean {
   }
 }
 
-function cropHex (x:string) {
+function cropHex(x: string): string {
   return x.replace('0x', '')
 }
 
-type ShiftPair = {
-  shift: number,
-  x: string,
+interface ShiftPair {
+  shift: number
+  x: string
   y: string
 }
 
-function addZeros (val: string, numZeros: number) {
+function addZeros(val: string, numZeros: number): string {
   let out = val
   for (let n = 0; n < numZeros; n++) {
     out += '0'
@@ -42,7 +42,7 @@ function addZeros (val: string, numZeros: number) {
 }
 
 // Remove starting and trailing zeros and decimal
-function trimEnd (val: string): string {
+function trimEnd(val: string): string {
   // Remove starting zeros if there are any
   let out = val.replace(/^0+/, '')
   out = out.replace(/^\.+/, '0.')
@@ -62,7 +62,7 @@ function trimEnd (val: string): string {
   return out
 }
 
-function addDecimal (x: string, shift: number) {
+function addDecimal(x: string, shift: number): string {
   if (shift === 0) return x
   let isNegative = false
   if (x.slice(0, 1) === '-') {
@@ -73,7 +73,8 @@ function addDecimal (x: string, shift: number) {
   if (shift > x.length) {
     out = '0.' + addZeros('', shift - x.length) + x
   } else {
-    out = x.substr(0, x.length - shift) + '.' + x.substr(x.length - shift, x.length)
+    out =
+      x.substr(0, x.length - shift) + '.' + x.substr(x.length - shift, x.length)
   }
   out = trimEnd(out)
   if (isNegative) {
@@ -83,15 +84,19 @@ function addDecimal (x: string, shift: number) {
 }
 // Takes two floating point (base 10) numbers and finds the multiplier needed to make them both
 // operable as a integer
-function floatShifts (xStart:string, yStart:string, moreShift?: number): ShiftPair {
+function floatShifts(
+  xStart: string,
+  yStart: string,
+  moreShift?: number
+): ShiftPair {
   let x = xStart
   let y = yStart
   validate(x, y)
-  let xPos:number = x.indexOf('.')
-  let yPos:number = y.indexOf('.')
+  let xPos: number = x.indexOf('.')
+  let yPos: number = y.indexOf('.')
 
-  const xHex:boolean = isHex(x)
-  const yHex:boolean = isHex(y)
+  const xHex: boolean = isHex(x)
+  const yHex: boolean = isHex(y)
 
   if (xPos !== -1) {
     // Remove trailing zeros
@@ -121,7 +126,7 @@ function floatShifts (xStart:string, yStart:string, moreShift?: number): ShiftPa
       yShift = y.length - yPos - 1
     }
 
-    let shift = (xShift > yShift ? xShift : yShift)
+    const shift = xShift > yShift ? xShift : yShift
     let moreS = 0
     if (typeof moreShift === 'number') {
       moreS = moreShift
@@ -136,13 +141,15 @@ function floatShifts (xStart:string, yStart:string, moreShift?: number): ShiftPa
   } else {
     // Both x and y are int and need no float conversion
     const out: ShiftPair = {
-      x, y, shift: 0
+      x,
+      y,
+      shift: 0,
     }
     return out
   }
 }
 
-function validate (...args: Array<string>) {
+function validate(...args: string[]): void {
   for (const arg of args) {
     if (arg.split('.').length - 1 > 1) {
       throw new Error('Invalid number: more than one decimal point')
@@ -153,7 +160,7 @@ function validate (...args: Array<string>) {
   }
 }
 
-function add (x1:string, y1:string, base:number = 10):string {
+function add(x1: string, y1: string, base: number = 10): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
   let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
@@ -167,7 +174,7 @@ function add (x1:string, y1:string, base:number = 10):string {
   return base === 10 ? out : '0x' + out
 }
 
-function mul (x1:string, y1:string, base:number = 10):string {
+function mul(x1: string, y1: string, base: number = 10): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
   let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
@@ -181,7 +188,7 @@ function mul (x1:string, y1:string, base:number = 10):string {
   return base === 10 ? out : '0x' + out
 }
 
-function sub (x1:string, y1:string, base:number = 10):string {
+function sub(x1: string, y1: string, base: number = 10): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
   let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
@@ -195,7 +202,12 @@ function sub (x1:string, y1:string, base:number = 10):string {
   return base === 10 ? out : '0x' + out
 }
 
-function div (x1:string, y1:string, precision: number = 0, base:number = 10):string {
+function div(
+  x1: string,
+  y1: string,
+  precision: number = 0,
+  base: number = 10
+): string {
   if (base !== 10 && precision > 0) {
     throw new Error('Cannot operate on floating point hex values')
   }
@@ -212,7 +224,7 @@ function div (x1:string, y1:string, precision: number = 0, base:number = 10):str
   return base === 10 ? out : '0x' + out
 }
 
-function lt (x1:string, y1:string):boolean {
+function lt(x1: string, y1: string): boolean {
   let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
@@ -223,7 +235,7 @@ function lt (x1:string, y1:string):boolean {
   return xBN.lt(yBN)
 }
 
-function lte (x1:string, y1:string):boolean {
+function lte(x1: string, y1: string): boolean {
   let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
@@ -234,7 +246,7 @@ function lte (x1:string, y1:string):boolean {
   return xBN.lte(yBN)
 }
 
-function gt (x1:string, y1:string):boolean {
+function gt(x1: string, y1: string): boolean {
   let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
@@ -245,7 +257,7 @@ function gt (x1:string, y1:string):boolean {
   return xBN.gt(yBN)
 }
 
-function gte (x1:string, y1:string):boolean {
+function gte(x1: string, y1: string): boolean {
   let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
@@ -256,7 +268,7 @@ function gte (x1:string, y1:string):boolean {
   return xBN.gte(yBN)
 }
 
-function eq (x1:string, y1:string):boolean {
+function eq(x1: string, y1: string): boolean {
   let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
@@ -267,7 +279,7 @@ function eq (x1:string, y1:string):boolean {
   return xBN.eq(yBN)
 }
 
-function min (x1:string, y1:string, base:number = 10):string {
+function min(x1: string, y1: string, base: number = 10): string {
   let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
@@ -285,18 +297,18 @@ function min (x1:string, y1:string, base:number = 10):string {
   return base === 10 ? out : '0x' + out
 }
 
-function abs (x1:string, base:number = 10):string {
+function abs(x1: string, base: number = 10): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
   let { x, shift } = floatShifts(x1, '0')
   const xBase = isHex(x1) ? 16 : 10
   x = cropHex(x)
   const xBN = new BN(x, xBase)
-  let out = xBN.abs(xBN).toString(base)
+  let out = xBN.abs().toString(base)
   out = addDecimal(out, shift)
   return base === 10 ? out : '0x' + out
 }
 
-function max (x1:string, y1:string, base:number = 10):string {
+function max(x1: string, y1: string, base: number = 10): string {
   let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
@@ -314,7 +326,11 @@ function max (x1:string, y1:string, base:number = 10):string {
   return base === 10 ? out : '0x' + out
 }
 
-function toFixed (x1:string, minPrecision: number = 2, maxPrecision: number = 8) {
+function toFixed(
+  x1: string,
+  minPrecision: number = 2,
+  maxPrecision: number = 8
+): string {
   validate(x1)
   let negative = false
   let out = ''
@@ -351,11 +367,11 @@ function toFixed (x1:string, minPrecision: number = 2, maxPrecision: number = 8)
   return out
 }
 
-function log10 (x:string):number {
+function log10(x: string): number {
   if (!(x.match(/^[0-1]+$/g) !== null)) {
     throw new Error('InvalidLogInputValue: Must be a power of 10')
   }
-  if (!(x.startsWith('1'))) {
+  if (!x.startsWith('1')) {
     throw new Error('InvalidLogInputValue: Must not have leading zeros')
   }
   if ((x.match(/1/g) || []).length > 1) {
@@ -364,6 +380,19 @@ function log10 (x:string):number {
   return (x.match(/0/g) || []).length
 }
 
-const bns = { add, sub, mul, div, gt, lt, gte, lte, eq, min, max, log10, toFixed, abs }
-
-export { add, sub, mul, div, gt, lt, gte, lte, eq, min, max, log10, toFixed, abs, bns }
+export {
+  add,
+  sub,
+  mul,
+  div,
+  gt,
+  lt,
+  gte,
+  lte,
+  eq,
+  min,
+  max,
+  log10,
+  toFixed,
+  abs,
+}
