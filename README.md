@@ -38,6 +38,6 @@ Floating point big number library using only strings as inputs and outputs
     console.log(bs.sub('3.2', '1.3') // => '1.9'
     console.log(bs.mul('3.2', '1.3') // => '4.16'
 
-    // For `div`, 3rd arg is base, 4th arg is decimal precision
-    console.log(bs.div('10', '3.0', 10, 5) // => '3.33333'
-    console.log(bs.div('1.23', '3.3', 10, 5) // => '0.37272'
+    // For `div`, 3rd arg is decimal precision, 4th arg is base
+    console.log(bs.div('10', '3.0', 5, 10) // => '3.33333'
+    console.log(bs.div('1.23', '3.3', 5, 10) // => '0.37272'
