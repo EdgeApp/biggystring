@@ -189,6 +189,12 @@ describe('div', function () {
       '400000000000000000000000000'
     )
   })
+  it('divFloat with 2 very different size floats', function () {
+    assert.equal(
+      bns.divFloat('258314', '44259003611849456'),
+      '0.00000000000583641697552453787845483515333625998899100236535'
+    )
+  })
   it('very big float (precision 9, base 10)', function () {
     assert.equal(
       bns.div('800000000000000000000000000.000000008', '2', 9, 10),

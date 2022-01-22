@@ -29,6 +29,7 @@ function cropHex(x: string): string {
 
 interface ShiftPair {
   shift: number
+  extraShift: number
   x: string
   y: string
 }
@@ -87,7 +88,7 @@ function addDecimal(x: string, shift: number): string {
 function floatShifts(
   xStart: string,
   yStart: string,
-  moreShift?: number
+  doFloat: boolean = false
 ): ShiftPair {
   let x = xStart
   let y = yStart
@@ -110,7 +111,7 @@ function floatShifts(
     yPos = y.indexOf('.')
   }
 
-  if (xPos !== -1 || yPos !== -1 || typeof moreShift === 'number') {
+  if (xPos !== -1 || yPos !== -1 || doFloat) {
     if (xHex || yHex) {
       throw new Error('Cannot operate on base16 float values')
     }
@@ -127,15 +128,18 @@ function floatShifts(
     }
 
     const shift = xShift > yShift ? xShift : yShift
-    let moreS = 0
-    if (typeof moreShift === 'number') {
-      moreS = moreShift
-    }
 
-    x = addZeros(x.replace('.', ''), shift + moreS - xShift)
+    x = addZeros(x.replace('.', ''), shift - xShift)
     y = addZeros(y.replace('.', ''), shift - yShift)
 
-    const out: ShiftPair = { x, y, shift }
+    let extraShift = 0
+    if (doFloat) {
+      const longestLength = x.length > y.length ? x.length : y.length
+      extraShift = 76 - longestLength
+      x = addZeros(x, extraShift)
+    }
+
+    const out: ShiftPair = { x, y, shift, extraShift }
 
     return out
   } else {
@@ -144,6 +148,7 @@ function floatShifts(
       x,
       y,
       shift: 0,
+      extraShift: 0,
     }
     return out
   }
@@ -202,17 +207,21 @@ function sub(x1: string, y1: string, base: number = 10): string {
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
+function divFloat(x1: string, y1: string): string {
+  return div(x1, y1, -1)
+}
+
 function div(
   x1: string,
   y1: string,
   precision: number = 0,
   base: number = 10
 ): string {
-  if (base !== 10 && precision > 0) {
+  if (base !== 10 && precision !== 0) {
     throw new Error('Cannot operate on floating point hex values')
   }
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
-  let { x, y } = floatShifts(x1, y1, precision)
+  let { x, y, extraShift } = floatShifts(x1, y1, true)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
@@ -220,7 +229,10 @@ function div(
   const xBN = new BN(x, xBase)
   const yBN = new BN(y, yBase)
   let out = xBN.div(yBN).toString(base)
-  out = addDecimal(out, precision)
+  out = addDecimal(out, extraShift)
+  if (precision >= 0) {
+    out = toFixed(out, 0, precision)
+  }
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
@@ -460,6 +472,7 @@ export {
   sub,
   mul,
   div,
+  divFloat,
   gt,
   lt,
   gte,
