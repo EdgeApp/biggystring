@@ -6,12 +6,13 @@ import BN from 'bn.js'
 
 interface ShiftPair {
   shift: number
+  extraShift: number
   x: string
   y: string
 }
 
 const SCI_NOTATION_REGEX = /^(-?\d*\.?\d*)e((?:\+|-)?\d+)$/
-
+const RECOMMENDED_DIVIDE_DIGITS = 77
 // -----------------------------------------------------------------------------
 // Public
 // -----------------------------------------------------------------------------
@@ -70,17 +71,25 @@ export function sub(
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
+export function divf(x1: string, y1: string): string {
+  return div(x1, y1, true)
+}
+
 export function div(
   x1: string | number,
   y1: string | number,
-  precision: number = 0,
+  precision: true | number = 0,
   base: number = 10
 ): string {
-  if (base !== 10 && precision > 0) {
+  if (base !== 10 && precision !== 0) {
     throw new Error('Cannot operate on floating point hex values')
   }
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
-  let { x, y } = floatShifts(x1, y1, precision)
+  let { x, y, extraShift } = floatShifts(
+    x1,
+    y1,
+    precision === true || precision > 0
+  )
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
@@ -88,7 +97,10 @@ export function div(
   const xBN = new BN(x, xBase)
   const yBN = new BN(y, yBase)
   let out = xBN.div(yBN).toString(base)
-  out = addDecimal(out, precision)
+  out = addDecimal(out, extraShift)
+  if (typeof precision === 'number' && precision > 0) {
+    out = toFixed(out, 0, precision)
+  }
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
@@ -323,10 +335,11 @@ function cropHex(x: string): string {
 function floatShifts(
   xStart: string | number,
   yStart: string | number,
-  moreShift?: number
+  doFloat: boolean = false
 ): ShiftPair {
   let x = toBns(xStart)
   let y = toBns(yStart)
+
   let xPos: number = x.indexOf('.')
   let yPos: number = y.indexOf('.')
 
@@ -345,7 +358,7 @@ function floatShifts(
     yPos = y.indexOf('.')
   }
 
-  if (xPos !== -1 || yPos !== -1 || typeof moreShift === 'number') {
+  if (xPos !== -1 || yPos !== -1 || doFloat) {
     if (xHex || yHex) {
       throw new Error('Cannot operate on base16 float values')
     }
@@ -362,15 +375,21 @@ function floatShifts(
     }
 
     const shift = xShift > yShift ? xShift : yShift
-    let moreS = 0
-    if (typeof moreShift === 'number') {
-      moreS = moreShift
-    }
 
-    x = addZeros(x.replace('.', ''), shift + moreS - xShift)
+    x = addZeros(x.replace('.', ''), shift - xShift)
     y = addZeros(y.replace('.', ''), shift - yShift)
 
-    const out: ShiftPair = { x, y, shift }
+    let extraShift = 0
+    if (doFloat) {
+      const totalLength = x.length + y.length
+      extraShift =
+        totalLength > RECOMMENDED_DIVIDE_DIGITS
+          ? totalLength
+          : RECOMMENDED_DIVIDE_DIGITS
+      x = addZeros(x, extraShift)
+    }
+
+    const out: ShiftPair = { x, y, shift, extraShift }
 
     return out
   } else {
@@ -379,6 +398,7 @@ function floatShifts(
       x,
       y,
       shift: 0,
+      extraShift: 0,
     }
     return out
   }
