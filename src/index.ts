@@ -171,7 +171,7 @@ function add(x1: string, y1: string, base: number = 10): string {
   const yBN = new BN(y, yBase)
   let out = xBN.add(yBN).toString(base)
   out = addDecimal(out, shift)
-  return base === 10 ? out : '0x' + out
+  return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
 function mul(x1: string, y1: string, base: number = 10): string {
@@ -185,7 +185,7 @@ function mul(x1: string, y1: string, base: number = 10): string {
   const yBN = new BN(y, yBase)
   let out = xBN.mul(yBN).toString(base)
   out = addDecimal(out, shift * 2)
-  return base === 10 ? out : '0x' + out
+  return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
 function sub(x1: string, y1: string, base: number = 10): string {
@@ -199,7 +199,7 @@ function sub(x1: string, y1: string, base: number = 10): string {
   const yBN = new BN(y, yBase)
   let out = xBN.sub(yBN).toString(base)
   out = addDecimal(out, shift)
-  return base === 10 ? out : '0x' + out
+  return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
 function div(
@@ -221,7 +221,7 @@ function div(
   const yBN = new BN(y, yBase)
   let out = xBN.div(yBN).toString(base)
   out = addDecimal(out, precision)
-  return base === 10 ? out : '0x' + out
+  return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
 function lt(x1: string, y1: string): boolean {
@@ -294,7 +294,7 @@ function min(x1: string, y1: string, base: number = 10): string {
     out = yBN.toString(base)
   }
   out = addDecimal(out, shift)
-  return base === 10 ? out : '0x' + out
+  return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
 function abs(x1: string, base: number = 10): string {
@@ -305,7 +305,7 @@ function abs(x1: string, base: number = 10): string {
   const xBN = new BN(x, xBase)
   let out = xBN.abs().toString(base)
   out = addDecimal(out, shift)
-  return base === 10 ? out : '0x' + out
+  return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
 function max(x1: string, y1: string, base: number = 10): string {
@@ -323,7 +323,7 @@ function max(x1: string, y1: string, base: number = 10): string {
     out = yBN.toString(base)
   }
   out = addDecimal(out, shift)
-  return base === 10 ? out : '0x' + out
+  return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
 function precisionAdjust(

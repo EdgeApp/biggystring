@@ -87,6 +87,9 @@ describe('add', function () {
       '1000000000000000000.5555000000000000000000000000000000005555'
     )
   })
+  it('resolve negative numbers in base 16', function () {
+    assert.equal(bns.add('-60830', '0', 16), '-0xed9e')
+  })
 })
 
 describe('sub', function () {
@@ -126,6 +129,9 @@ describe('sub', function () {
       '1000000000000000000.5555000000000000000000000000000000005555'
     )
   })
+  it('resolve negative numbers in base 16', function () {
+    assert.equal(bns.sub('-60830', '0', 16), '-0xed9e')
+  })
 })
 
 describe('mul', function () {
@@ -143,6 +149,9 @@ describe('mul', function () {
       bns.mul('1234567890123456.123', '.00000000000000000000001'),
       '0.00000001234567890123456123'
     )
+  })
+  it('resolve negative numbers in base 16', function () {
+    assert.equal(bns.mul('-60830', '1', 16), '-0xed9e')
   })
 })
 
@@ -196,6 +205,9 @@ describe('div', function () {
     assert.throws(() => {
       bns.div('10', '3', 5, 16)
     })
+  })
+  it('resolve negative numbers in base 16', function () {
+    assert.equal(bns.div('-60830', '1', 0, 16), '-0xed9e')
   })
 })
 
