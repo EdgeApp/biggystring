@@ -2,9 +2,41 @@
  * Created by paul on 7/25/17.
  */
 
-const bns = require('../lib/index.js')
+import { assert } from 'chai'
 
-const assert = require('assert')
+import {
+  abs,
+  add,
+  div,
+  eq,
+  gt,
+  gte,
+  log10,
+  lt,
+  lte,
+  max,
+  min,
+  mul,
+  sub,
+  toFixed,
+} from '../index'
+
+const bns = {
+  add,
+  sub,
+  mul,
+  log10,
+  div,
+  toFixed,
+  lt,
+  lte,
+  gt,
+  gte,
+  eq,
+  min,
+  max,
+  abs,
+}
 
 describe('add', function () {
   it('32 + 10 = 42', function () {
@@ -159,7 +191,7 @@ describe('div', function () {
   })
   it('Check error with hex output', function () {
     assert.throws(() => {
-      const y = bns.div('10', '3', 5, 16)
+      bns.div('10', '3', 5, 16)
     })
   })
 })
