@@ -326,6 +326,76 @@ function max(x1: string, y1: string, base: number = 10): string {
   return base === 10 ? out : '0x' + out
 }
 
+function precisionAdjust(
+  type: 'ceil' | 'floor' | 'round',
+  x1: string,
+  precision: number = 0
+): string {
+  validate(x1)
+  let negative = false
+  let out = ''
+  let x = x1
+
+  if (x.includes('-')) {
+    negative = true
+    // Remove any leading '-' signs
+    x = x.replace(/^-+/, '')
+  }
+  const [whole, decimal = ''] = x.split('.')
+
+  // Number of decimal places number has
+  const decimalPos = x.indexOf('.')
+  const checkIndex =
+    decimalPos !== -1 ? decimalPos - precision : x.length - precision
+  const combined = whole + decimal
+
+  if (type === 'round') {
+    const checkValue = combined[checkIndex] ?? '0'
+    if (gte(checkValue, '5')) {
+      type = 'ceil'
+    } else {
+      type = 'floor'
+    }
+  }
+
+  // Zero out lower precision places
+  const numZeros = Math.max(combined.length - checkIndex + 1, 0)
+  const zeroString = new Array(numZeros).join('0')
+  let outCombined = combined.substring(0, checkIndex) + zeroString
+  const bumpUp = gt(combined.substring(checkIndex), '0')
+  if (type === 'ceil' && bumpUp) {
+    const addValue = '1' + zeroString
+    outCombined = add(outCombined, addValue)
+  }
+
+  const newDecimalPos = decimalPos + (outCombined.length - combined.length)
+  // Add back the decimal
+  if (decimalPos !== -1) {
+    out =
+      outCombined.substring(0, newDecimalPos) +
+      '.' +
+      outCombined.substring(newDecimalPos)
+  } else {
+    out = outCombined
+  }
+
+  out = trimEnd(out)
+
+  if (negative && out !== '0') {
+    out = '-' + out
+  }
+  return out
+}
+
+const floor = (x1: string, precision: number): string =>
+  precisionAdjust('floor', x1, precision)
+
+const ceil = (x1: string, precision: number): string =>
+  precisionAdjust('ceil', x1, precision)
+
+const round = (x1: string, precision: number): string =>
+  precisionAdjust('round', x1, precision)
+
 function toFixed(
   x1: string,
   minPrecision: number = 2,
@@ -361,7 +431,7 @@ function toFixed(
   // Remove trailing "." if there is one
   out = out.replace(/\.+$/, '')
 
-  if (negative) {
+  if (negative && out !== '0') {
     out = '-' + out
   }
   return out
@@ -395,4 +465,7 @@ export {
   log10,
   toFixed,
   abs,
+  floor,
+  ceil,
+  round,
 }
