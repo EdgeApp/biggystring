@@ -22,7 +22,7 @@ import {
   round,
   sub,
   toFixed,
-} from '../index'
+} from '../src/index'
 
 const bns = {
   add,
