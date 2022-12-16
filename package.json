@@ -30,7 +30,7 @@
     "lint": "eslint --ext .js,.jsx,.ts,.tsx ./src",
     "fix": "npm run lint -- --fix",
     "precommit": "npm run build && npm test",
-    "prepare": "npm run build",
+    "prepare": "husky install && npm run build",
     "test": "npm run lint && mocha"
   },
   "dependencies": {
@@ -55,7 +55,7 @@
     "eslint-plugin-react": ">=7.14.2",
     "eslint-plugin-simple-import-sort": ">=4.0.0",
     "eslint-plugin-standard": ">=4.0.0",
-    "husky": "^0.14.3",
+    "husky": "^8.0.2",
     "mocha": "^10.1.0",
     "prettier": "^2.0.5",
     "sucrase": "^3.12.1",
