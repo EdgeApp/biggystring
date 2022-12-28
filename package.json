@@ -29,9 +29,12 @@
     "cover": "nyc --reporter=lcov --reporter=text --reporter=html --extension .js npm test",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx ./src",
     "fix": "npm run lint -- --fix",
-    "precommit": "npm run build && npm test",
-    "prepare": "npm run build",
-    "test": "npm run lint && mocha"
+    "precommit": "lint-staged && npm run build && npm test",
+    "prepare": "husky install && npm run build",
+    "test": "mocha"
+  },
+  "lint-staged": {
+    "*.{js,ts}": "eslint"
   },
   "dependencies": {
     "bn.js": "^4.11.7"
@@ -49,13 +52,15 @@
     "eslint": ">=6.2.2",
     "eslint-config-standard-kit": ">=0.14.4",
     "eslint-plugin-import": ">=2.18.0",
+    "eslint-plugin-json-files": "^1.4.0",
     "eslint-plugin-node": ">=9.1.0",
     "eslint-plugin-prettier": ">=3.0.0",
     "eslint-plugin-promise": ">=4.2.1",
     "eslint-plugin-react": ">=7.14.2",
     "eslint-plugin-simple-import-sort": ">=4.0.0",
     "eslint-plugin-standard": ">=4.0.0",
-    "husky": "^0.14.3",
+    "husky": "^8.0.2",
+    "lint-staged": "^13.1.0",
     "mocha": "^10.1.0",
     "prettier": "^2.0.5",
     "sucrase": "^3.12.1",
