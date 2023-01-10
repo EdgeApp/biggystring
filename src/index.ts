@@ -365,7 +365,12 @@ function precisionAdjust(
   const bumpUp = gt(combined.substring(checkIndex), '0')
   if (type === 'ceil' && bumpUp) {
     const addValue = '1' + zeroString
-    outCombined = add(outCombined, addValue)
+
+    // Leading zeros get removed after an `add`. Save the number of leading zeros
+    // and add them back
+    const leadingZeros = (outCombined.match(/^0+/) ?? [''])[0].length
+    const leadingZerosString = new Array(leadingZeros).join('0')
+    outCombined = leadingZerosString + add(outCombined, addValue)
   }
 
   const newDecimalPos = decimalPos + (outCombined.length - combined.length)
