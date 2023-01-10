@@ -1,5 +1,9 @@
 # biggystring
 
+## 4.1.2 (2023-01-09)
+
+- Fix round/ceil for subzero numbers with leading zeros after decimal point
+
 ## 4.1.1 (2022-12-27)
 
 - Fix 0x prefix for negative hex numbers
