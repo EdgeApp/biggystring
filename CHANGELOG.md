@@ -1,5 +1,9 @@
 # biggystring
 
+## 4.1.3 (2023-01-09)
+
+- Fix library path
+
 ## 4.1.2 (2023-01-09)
 
 - Fix round/ceil for subzero numbers with leading zeros after decimal point
