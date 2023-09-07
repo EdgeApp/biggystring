@@ -21,6 +21,7 @@ import {
   mul,
   round,
   sub,
+  toBns,
   toFixed,
 } from '../src/index'
 
@@ -191,6 +192,93 @@ describe('div', function () {
   })
   it('resolve negative numbers in base 16', function () {
     assert.equal(div('-60830', '1', 0, 16), '-0xed9e')
+  })
+})
+
+describe('toBns', function () {
+  it('regular number', function () {
+    assert.equal(toBns(123), '123')
+  })
+  it('scientific notation: regular numbers', function () {
+    const numStr = '5e0'
+    assert.equal(toBns(numStr), '5')
+  })
+  it('scientific notation: big integer base', function () {
+    const big = 3000000000000000000000
+    const bigStr = big.toString()
+    assert.equal(bigStr, '3e+21')
+    assert.equal(toBns(big), '3000000000000000000000')
+    assert.equal(toBns(bigStr), '3000000000000000000000')
+  })
+  it('scientific notation: small integer base', function () {
+    const small = 0.000000000000000000003
+    const smallStr = small.toString()
+    assert.equal(smallStr, '3e-21')
+    assert.equal(toBns(small), '0.000000000000000000003')
+    assert.equal(toBns(smallStr), '0.000000000000000000003')
+  })
+  it('scientific notation: big negative base', function () {
+    const big = -3000000000000000000000
+    const bigStr = big.toString()
+    assert.equal(bigStr, '-3e+21')
+    assert.equal(toBns(big), '-3000000000000000000000')
+    assert.equal(toBns(bigStr), '-3000000000000000000000')
+  })
+  it('scientific notation: small negative base', function () {
+    const small = -0.000000000000000000003
+    const smallStr = small.toString()
+    assert(smallStr, '-3e-21')
+    assert.equal(toBns(small), '-0.000000000000000000003')
+    assert.equal(toBns(smallStr), '-0.000000000000000000003')
+  })
+  it('scientific notation: big decimal base', function () {
+    const decimal = 312000000000000000000000
+    const decimalStr = decimal.toString()
+    assert.equal(decimalStr, '3.12e+23')
+    assert.equal(toBns(decimal), '312000000000000000000000')
+    assert.equal(toBns(decimalStr), '312000000000000000000000')
+  })
+  it('scientific notation: small decimal base', function () {
+    const small = 0.000000000000000000000312
+    const smallStr = small.toString()
+    assert(smallStr, '3.12e-23')
+    assert.equal(toBns(small), '0.000000000000000000000312')
+    assert.equal(toBns(smallStr), '0.000000000000000000000312')
+  })
+  it('scientific notation: big negative decimal base', function () {
+    const small = -312000000000000000000000
+    const smallStr = small.toString()
+    assert(smallStr, '-3.12e+23')
+    assert.equal(toBns(small), '-312000000000000000000000')
+    assert.equal(toBns(smallStr), '-312000000000000000000000')
+  })
+  it('scientific notation: small negative decimal base', function () {
+    const small = -0.000000000000000000000312
+    const smallStr = small.toString()
+    assert(smallStr, '-3.12e-23')
+    assert.equal(toBns(small), '-0.000000000000000000000312')
+    assert.equal(toBns(smallStr), '-0.000000000000000000000312')
+  })
+  it('scientific notation: long decimal base', function () {
+    const longDecimalSciNo = '-1.2345678911121314151617181920e-12'
+    assert.equal(
+      toBns(longDecimalSciNo),
+      '-0.000000000001234567891112131415161718192'
+    )
+  })
+  it('scientific notation: invalid numbers', function () {
+    assert.throws(
+      () => toBns('3.2.0e12'),
+      `Invalid number: more than one decimal point '3.2.0e12'`
+    )
+    assert.throws(
+      () => toBns('3x0e12'),
+      `Invalid number: non-number characters '3x0e12'`
+    )
+    assert.throws(
+      () => toBns('3e1.2'),
+      `Invalid number: non-number characters '3e1.2'`
+    )
   })
 })
 

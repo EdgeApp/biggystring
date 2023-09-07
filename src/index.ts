@@ -10,6 +10,8 @@ interface ShiftPair {
   y: string
 }
 
+const SCI_NOTATION_REGEX = /^(-?\d*\.?\d*)e((?:\+|-)?\d+)$/
+
 // -----------------------------------------------------------------------------
 // Public
 // -----------------------------------------------------------------------------
@@ -188,6 +190,22 @@ export const ceil = (x1: string, precision: number): string =>
 
 export const round = (x1: string, precision: number): string =>
   precisionAdjust('round', x1, precision)
+
+export function toBns(n: number | string): string {
+  let out = typeof n === 'number' ? n.toString() : n
+  // Handle scientific notation
+  const match = out.match(SCI_NOTATION_REGEX)
+
+  if (match != null) {
+    const base = match[1]
+    const exponent = parseInt(match[2])
+    out = sciNotation(base, exponent)
+  }
+
+  validate(out)
+
+  return out
+}
 
 export function toFixed(
   x1: string,
@@ -430,6 +448,14 @@ function precisionAdjust(
   return out
 }
 
+function sciNotation(x1: string, exponent: number): string {
+  const magnitude =
+    exponent >= 0
+      ? '1' + '0'.repeat(Math.abs(exponent)) // 5.8e7 -> 58000000
+      : `0.${'0'.repeat(Math.abs(exponent) - 1)}1` // 5.8e-7 -> 0.00000058
+  return mul(x1, magnitude)
+}
+
 // Remove starting and trailing zeros and decimal
 function trimEnd(val: string): string {
   // Remove starting zeros if there are any
@@ -454,10 +480,13 @@ function trimEnd(val: string): string {
 function validate(...args: string[]): void {
   for (const arg of args) {
     if (arg.split('.').length - 1 > 1) {
-      throw new Error('Invalid number: more than one decimal point')
+      throw new Error(`Invalid number: more than one decimal point '${arg}'`)
     }
     if (arg.split('-').length - 1 > 1) {
-      throw new Error('Invalid number: more than one negative sign')
+      throw new Error(`Invalid number: more than one negative sign '${arg}'`)
+    }
+    if (/[^\d.\-x]/.test(arg)) {
+      throw new Error(`Invalid number: non-number characters '${arg}'`)
     }
   }
 }

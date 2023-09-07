@@ -1,5 +1,9 @@
 # biggystring
 
+## Unreleased
+
+- added: New toBns function to convert JS number to big number strings
+
 ## 4.1.3 (2023-01-09)
 
 - Fix library path
