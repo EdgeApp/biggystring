@@ -4,161 +4,15 @@
 
 import BN from 'bn.js'
 
-// const MAX_DECIMALS = 10
-
-function isHex(x: string): boolean {
-  if (
-    x.startsWith('0x') ||
-    x.startsWith('-0x') ||
-    x.toLowerCase().includes('a') ||
-    x.toLowerCase().includes('b') ||
-    x.toLowerCase().includes('c') ||
-    x.toLowerCase().includes('d') ||
-    x.toLowerCase().includes('e') ||
-    x.toLowerCase().includes('f')
-  ) {
-    return true
-  } else {
-    return false
-  }
-}
-
-function cropHex(x: string): string {
-  return x.replace('0x', '')
-}
-
 interface ShiftPair {
   shift: number
   x: string
   y: string
 }
 
-function addZeros(val: string, numZeros: number): string {
-  let out = val
-  for (let n = 0; n < numZeros; n++) {
-    out += '0'
-  }
-  return out
-}
-
-// Remove starting and trailing zeros and decimal
-function trimEnd(val: string): string {
-  // Remove starting zeros if there are any
-  let out = val.replace(/^0+/, '')
-  out = out.replace(/^\.+/, '0.')
-  if (out.includes('.')) {
-    // Remove trailing zeros
-    out = out.replace(/0+$/, '')
-
-    // Remove trailing "." if there is one
-    out = out.replace(/\.+$/, '')
-    if (out === '') {
-      out = '0'
-    }
-  }
-  if (out === '') {
-    out = '0'
-  }
-  return out
-}
-
-function addDecimal(x: string, shift: number): string {
-  if (shift === 0) return x
-  let isNegative = false
-  if (x.slice(0, 1) === '-') {
-    isNegative = true
-    x = x.slice(1)
-  }
-  let out
-  if (shift > x.length) {
-    out = '0.' + addZeros('', shift - x.length) + x
-  } else {
-    out =
-      x.substr(0, x.length - shift) + '.' + x.substr(x.length - shift, x.length)
-  }
-  out = trimEnd(out)
-  if (isNegative) {
-    out = `-${out}`
-  }
-  return out
-}
-// Takes two floating point (base 10) numbers and finds the multiplier needed to make them both
-// operable as a integer
-function floatShifts(
-  xStart: string,
-  yStart: string,
-  moreShift?: number
-): ShiftPair {
-  let x = xStart
-  let y = yStart
-  validate(x, y)
-  let xPos: number = x.indexOf('.')
-  let yPos: number = y.indexOf('.')
-
-  const xHex: boolean = isHex(x)
-  const yHex: boolean = isHex(y)
-
-  if (xPos !== -1) {
-    // Remove trailing zeros
-    x = trimEnd(x)
-    xPos = x.indexOf('.')
-  }
-
-  if (yPos !== -1) {
-    // Remove trailing zeros
-    y = trimEnd(y)
-    yPos = y.indexOf('.')
-  }
-
-  if (xPos !== -1 || yPos !== -1 || typeof moreShift === 'number') {
-    if (xHex || yHex) {
-      throw new Error('Cannot operate on base16 float values')
-    }
-
-    let xShift = 0
-    let yShift = 0
-
-    if (xPos !== -1) {
-      xShift = x.length - xPos - 1
-    }
-
-    if (yPos !== -1) {
-      yShift = y.length - yPos - 1
-    }
-
-    const shift = xShift > yShift ? xShift : yShift
-    let moreS = 0
-    if (typeof moreShift === 'number') {
-      moreS = moreShift
-    }
-
-    x = addZeros(x.replace('.', ''), shift + moreS - xShift)
-    y = addZeros(y.replace('.', ''), shift - yShift)
-
-    const out: ShiftPair = { x, y, shift }
-
-    return out
-  } else {
-    // Both x and y are int and need no float conversion
-    const out: ShiftPair = {
-      x,
-      y,
-      shift: 0,
-    }
-    return out
-  }
-}
-
-function validate(...args: string[]): void {
-  for (const arg of args) {
-    if (arg.split('.').length - 1 > 1) {
-      throw new Error('Invalid number: more than one decimal point')
-    }
-    if (arg.split('-').length - 1 > 1) {
-      throw new Error('Invalid number: more than one negative sign')
-    }
-  }
-}
+// -----------------------------------------------------------------------------
+// Public
+// -----------------------------------------------------------------------------
 
 export function add(x1: string, y1: string, base: number = 10): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
@@ -326,6 +180,190 @@ export function max(x1: string, y1: string, base: number = 10): string {
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
+export const floor = (x1: string, precision: number): string =>
+  precisionAdjust('floor', x1, precision)
+
+export const ceil = (x1: string, precision: number): string =>
+  precisionAdjust('ceil', x1, precision)
+
+export const round = (x1: string, precision: number): string =>
+  precisionAdjust('round', x1, precision)
+
+export function toFixed(
+  x1: string,
+  minPrecision: number = 2,
+  maxPrecision: number = 8
+): string {
+  validate(x1)
+  let negative = false
+  let out = ''
+  let x = x1
+
+  if (x.includes('-')) {
+    negative = true
+    // Remove any leading '-' signs
+    x = x.replace(/^-+/, '')
+  }
+  x = trimEnd(x)
+
+  // Number of decimal places number has
+  const decimalPos = x.indexOf('.')
+  if (decimalPos === -1) {
+    out = x + '.' + addZeros('', minPrecision)
+  } else {
+    const numDecimals = x.length - decimalPos - 1
+    if (numDecimals > maxPrecision) {
+      out = x.substr(0, x.length - (numDecimals - maxPrecision))
+    } else if (numDecimals < minPrecision) {
+      out = x + addZeros('', minPrecision - numDecimals)
+    } else {
+      out = x
+    }
+  }
+
+  // Remove trailing "." if there is one
+  out = out.replace(/\.+$/, '')
+
+  if (negative && out !== '0') {
+    out = '-' + out
+  }
+  return out
+}
+
+export function log10(x: string): number {
+  if (!(x.match(/^[0-1]+$/g) !== null)) {
+    throw new Error('InvalidLogInputValue: Must be a power of 10')
+  }
+  if (!x.startsWith('1')) {
+    throw new Error('InvalidLogInputValue: Must not have leading zeros')
+  }
+  if ((x.match(/1/g) || []).length > 1) {
+    throw new Error('InvalidLogInputValue: Must be power of 10.')
+  }
+  return (x.match(/0/g) || []).length
+}
+
+// -----------------------------------------------------------------------------
+// Private
+// -----------------------------------------------------------------------------
+
+function addDecimal(x: string, shift: number): string {
+  if (shift === 0) return x
+  let isNegative = false
+  if (x.slice(0, 1) === '-') {
+    isNegative = true
+    x = x.slice(1)
+  }
+  let out
+  if (shift > x.length) {
+    out = '0.' + addZeros('', shift - x.length) + x
+  } else {
+    out =
+      x.substr(0, x.length - shift) + '.' + x.substr(x.length - shift, x.length)
+  }
+  out = trimEnd(out)
+  if (isNegative) {
+    out = `-${out}`
+  }
+  return out
+}
+
+function addZeros(val: string, numZeros: number): string {
+  let out = val
+  for (let n = 0; n < numZeros; n++) {
+    out += '0'
+  }
+  return out
+}
+
+function cropHex(x: string): string {
+  return x.replace('0x', '')
+}
+
+// Takes two floating point (base 10) numbers and finds the multiplier needed to make them both
+// operable as a integer
+function floatShifts(
+  xStart: string,
+  yStart: string,
+  moreShift?: number
+): ShiftPair {
+  let x = xStart
+  let y = yStart
+  validate(x, y)
+  let xPos: number = x.indexOf('.')
+  let yPos: number = y.indexOf('.')
+
+  const xHex: boolean = isHex(x)
+  const yHex: boolean = isHex(y)
+
+  if (xPos !== -1) {
+    // Remove trailing zeros
+    x = trimEnd(x)
+    xPos = x.indexOf('.')
+  }
+
+  if (yPos !== -1) {
+    // Remove trailing zeros
+    y = trimEnd(y)
+    yPos = y.indexOf('.')
+  }
+
+  if (xPos !== -1 || yPos !== -1 || typeof moreShift === 'number') {
+    if (xHex || yHex) {
+      throw new Error('Cannot operate on base16 float values')
+    }
+
+    let xShift = 0
+    let yShift = 0
+
+    if (xPos !== -1) {
+      xShift = x.length - xPos - 1
+    }
+
+    if (yPos !== -1) {
+      yShift = y.length - yPos - 1
+    }
+
+    const shift = xShift > yShift ? xShift : yShift
+    let moreS = 0
+    if (typeof moreShift === 'number') {
+      moreS = moreShift
+    }
+
+    x = addZeros(x.replace('.', ''), shift + moreS - xShift)
+    y = addZeros(y.replace('.', ''), shift - yShift)
+
+    const out: ShiftPair = { x, y, shift }
+
+    return out
+  } else {
+    // Both x and y are int and need no float conversion
+    const out: ShiftPair = {
+      x,
+      y,
+      shift: 0,
+    }
+    return out
+  }
+}
+
+function isHex(x: string): boolean {
+  if (
+    x.startsWith('0x') ||
+    x.startsWith('-0x') ||
+    x.toLowerCase().includes('a') ||
+    x.toLowerCase().includes('b') ||
+    x.toLowerCase().includes('c') ||
+    x.toLowerCase().includes('d') ||
+    x.toLowerCase().includes('e') ||
+    x.toLowerCase().includes('f')
+  ) {
+    return true
+  } else {
+    return false
+  }
+}
+
 function precisionAdjust(
   type: 'ceil' | 'floor' | 'round',
   x1: string,
@@ -392,65 +430,34 @@ function precisionAdjust(
   return out
 }
 
-export const floor = (x1: string, precision: number): string =>
-  precisionAdjust('floor', x1, precision)
+// Remove starting and trailing zeros and decimal
+function trimEnd(val: string): string {
+  // Remove starting zeros if there are any
+  let out = val.replace(/^0+/, '')
+  out = out.replace(/^\.+/, '0.')
+  if (out.includes('.')) {
+    // Remove trailing zeros
+    out = out.replace(/0+$/, '')
 
-export const ceil = (x1: string, precision: number): string =>
-  precisionAdjust('ceil', x1, precision)
-
-export const round = (x1: string, precision: number): string =>
-  precisionAdjust('round', x1, precision)
-
-export function toFixed(
-  x1: string,
-  minPrecision: number = 2,
-  maxPrecision: number = 8
-): string {
-  validate(x1)
-  let negative = false
-  let out = ''
-  let x = x1
-
-  if (x.includes('-')) {
-    negative = true
-    // Remove any leading '-' signs
-    x = x.replace(/^-+/, '')
-  }
-  x = trimEnd(x)
-
-  // Number of decimal places number has
-  const decimalPos = x.indexOf('.')
-  if (decimalPos === -1) {
-    out = x + '.' + addZeros('', minPrecision)
-  } else {
-    const numDecimals = x.length - decimalPos - 1
-    if (numDecimals > maxPrecision) {
-      out = x.substr(0, x.length - (numDecimals - maxPrecision))
-    } else if (numDecimals < minPrecision) {
-      out = x + addZeros('', minPrecision - numDecimals)
-    } else {
-      out = x
+    // Remove trailing "." if there is one
+    out = out.replace(/\.+$/, '')
+    if (out === '') {
+      out = '0'
     }
   }
-
-  // Remove trailing "." if there is one
-  out = out.replace(/\.+$/, '')
-
-  if (negative && out !== '0') {
-    out = '-' + out
+  if (out === '') {
+    out = '0'
   }
   return out
 }
 
-export function log10(x: string): number {
-  if (!(x.match(/^[0-1]+$/g) !== null)) {
-    throw new Error('InvalidLogInputValue: Must be a power of 10')
+function validate(...args: string[]): void {
+  for (const arg of args) {
+    if (arg.split('.').length - 1 > 1) {
+      throw new Error('Invalid number: more than one decimal point')
+    }
+    if (arg.split('-').length - 1 > 1) {
+      throw new Error('Invalid number: more than one negative sign')
+    }
   }
-  if (!x.startsWith('1')) {
-    throw new Error('InvalidLogInputValue: Must not have leading zeros')
-  }
-  if ((x.match(/1/g) || []).length > 1) {
-    throw new Error('InvalidLogInputValue: Must be power of 10.')
-  }
-  return (x.match(/0/g) || []).length
 }
