@@ -16,7 +16,11 @@ const SCI_NOTATION_REGEX = /^(-?\d*\.?\d*)e((?:\+|-)?\d+)$/
 // Public
 // -----------------------------------------------------------------------------
 
-export function add(x1: string, y1: string, base: number = 10): string {
+export function add(
+  x1: string | number,
+  y1: string | number,
+  base: number = 10
+): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
   let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
@@ -30,7 +34,11 @@ export function add(x1: string, y1: string, base: number = 10): string {
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
-export function mul(x1: string, y1: string, base: number = 10): string {
+export function mul(
+  x1: string | number,
+  y1: string | number,
+  base: number = 10
+): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
   let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
@@ -44,7 +52,11 @@ export function mul(x1: string, y1: string, base: number = 10): string {
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
-export function sub(x1: string, y1: string, base: number = 10): string {
+export function sub(
+  x1: string | number,
+  y1: string | number,
+  base: number = 10
+): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
   let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
@@ -59,8 +71,8 @@ export function sub(x1: string, y1: string, base: number = 10): string {
 }
 
 export function div(
-  x1: string,
-  y1: string,
+  x1: string | number,
+  y1: string | number,
   precision: number = 0,
   base: number = 10
 ): string {
@@ -80,7 +92,7 @@ export function div(
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
-export function lt(x1: string, y1: string): boolean {
+export function lt(x1: string | number, y1: string | number): boolean {
   let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
@@ -91,7 +103,7 @@ export function lt(x1: string, y1: string): boolean {
   return xBN.lt(yBN)
 }
 
-export function lte(x1: string, y1: string): boolean {
+export function lte(x1: string | number, y1: string | number): boolean {
   let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
@@ -102,7 +114,7 @@ export function lte(x1: string, y1: string): boolean {
   return xBN.lte(yBN)
 }
 
-export function gt(x1: string, y1: string): boolean {
+export function gt(x1: string | number, y1: string | number): boolean {
   let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
@@ -113,7 +125,7 @@ export function gt(x1: string, y1: string): boolean {
   return xBN.gt(yBN)
 }
 
-export function gte(x1: string, y1: string): boolean {
+export function gte(x1: string | number, y1: string | number): boolean {
   let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
@@ -124,7 +136,7 @@ export function gte(x1: string, y1: string): boolean {
   return xBN.gte(yBN)
 }
 
-export function eq(x1: string, y1: string): boolean {
+export function eq(x1: string | number, y1: string | number): boolean {
   let { x, y } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
@@ -135,7 +147,11 @@ export function eq(x1: string, y1: string): boolean {
   return xBN.eq(yBN)
 }
 
-export function min(x1: string, y1: string, base: number = 10): string {
+export function min(
+  x1: string | number,
+  y1: string | number,
+  base: number = 10
+): string {
   let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
@@ -153,7 +169,7 @@ export function min(x1: string, y1: string, base: number = 10): string {
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
-export function abs(x1: string, base: number = 10): string {
+export function abs(x1: string | number, base: number = 10): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
   let { x, shift } = floatShifts(x1, '0')
   const xBase = isHex(x1) ? 16 : 10
@@ -164,7 +180,11 @@ export function abs(x1: string, base: number = 10): string {
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
-export function max(x1: string, y1: string, base: number = 10): string {
+export function max(
+  x1: string | number,
+  y1: string | number,
+  base: number = 10
+): string {
   let { x, y, shift } = floatShifts(x1, y1)
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
@@ -182,13 +202,13 @@ export function max(x1: string, y1: string, base: number = 10): string {
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
-export const floor = (x1: string, precision: number): string =>
+export const floor = (x1: string | number, precision: number): string =>
   precisionAdjust('floor', x1, precision)
 
-export const ceil = (x1: string, precision: number): string =>
+export const ceil = (x1: string | number, precision: number): string =>
   precisionAdjust('ceil', x1, precision)
 
-export const round = (x1: string, precision: number): string =>
+export const round = (x1: string | number, precision: number): string =>
   precisionAdjust('round', x1, precision)
 
 export function toBns(n: number | string): string {
@@ -208,14 +228,14 @@ export function toBns(n: number | string): string {
 }
 
 export function toFixed(
-  x1: string,
+  x1: string | number,
   minPrecision: number = 2,
   maxPrecision: number = 8
 ): string {
-  validate(x1)
+  let x = toBns(x1)
+
   let negative = false
   let out = ''
-  let x = x1
 
   if (x.includes('-')) {
     negative = true
@@ -301,13 +321,12 @@ function cropHex(x: string): string {
 // Takes two floating point (base 10) numbers and finds the multiplier needed to make them both
 // operable as a integer
 function floatShifts(
-  xStart: string,
-  yStart: string,
+  xStart: string | number,
+  yStart: string | number,
   moreShift?: number
 ): ShiftPair {
-  let x = xStart
-  let y = yStart
-  validate(x, y)
+  let x = toBns(xStart)
+  let y = toBns(yStart)
   let xPos: number = x.indexOf('.')
   let yPos: number = y.indexOf('.')
 
@@ -365,7 +384,8 @@ function floatShifts(
   }
 }
 
-function isHex(x: string): boolean {
+function isHex(x1: string | number): boolean {
+  const x = toBns(x1)
   if (
     x.startsWith('0x') ||
     x.startsWith('-0x') ||
@@ -384,13 +404,13 @@ function isHex(x: string): boolean {
 
 function precisionAdjust(
   type: 'ceil' | 'floor' | 'round',
-  x1: string,
+  x1: string | number,
   precision: number = 0
 ): string {
-  validate(x1)
+  let x = toBns(x1)
+
   let negative = false
   let out = ''
-  let x = x1
 
   if (x.includes('-')) {
     negative = true

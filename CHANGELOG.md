@@ -3,6 +3,7 @@
 ## Unreleased
 
 - added: New toBns function to convert JS number to big number strings
+- changed: Implement toBns for all public API to expand argument type support
 
 ## 4.1.3 (2023-01-09)
 
