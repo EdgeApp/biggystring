@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.2.0 (2023-12-05)
+
 - added: New toBns function to convert JS number to big number strings
 - changed: Implement toBns for all public API to expand argument type support
 
