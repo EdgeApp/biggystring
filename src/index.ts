@@ -361,9 +361,6 @@ function floatShifts(
   let xPos: number = x.indexOf('.')
   let yPos: number = y.indexOf('.')
 
-  const xHex: boolean = isHex(x)
-  const yHex: boolean = isHex(y)
-
   if (xPos !== -1) {
     // Remove trailing zeros
     x = trimEnd(x)
@@ -377,7 +374,7 @@ function floatShifts(
   }
 
   if (xPos !== -1 || yPos !== -1 || doFloat) {
-    if (xHex || yHex) {
+    if (isHex(x) || isHex(y)) {
       throw new Error('Cannot operate on base16 float values')
     }
 
