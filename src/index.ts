@@ -12,7 +12,13 @@ interface ShiftPair {
 }
 
 const SCI_NOTATION_REGEX = /^(-?\d*\.?\d*)e((?:\+|-)?\d+)$/
+
+// This is the approximate number of decimal digits that can fit into a 256
+// bit number. For math operations, we expand floating point numbers to
+// turn them into integers for use with the BN library. This is the number of
+// digits we expand to.
 const TARGET_BIGNUM_DIGITS = 77
+
 // -----------------------------------------------------------------------------
 // Public
 // -----------------------------------------------------------------------------
