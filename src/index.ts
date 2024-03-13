@@ -6,11 +6,18 @@ import BN from 'bn.js'
 
 interface ShiftPair {
   shift: number
+  extraShift: number
   x: string
   y: string
 }
 
 const SCI_NOTATION_REGEX = /^(-?\d*\.?\d*)e((?:\+|-)?\d+)$/
+
+// This is the approximate number of decimal digits that can fit into a 256
+// bit number. For math operations, we expand floating point numbers to
+// turn them into integers for use with the BN library. This is the number of
+// digits we expand to.
+const TARGET_BIGNUM_DIGITS = 77
 
 // -----------------------------------------------------------------------------
 // Public
@@ -70,17 +77,25 @@ export function sub(
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
+export function divf(x1: string, y1: string): string {
+  return div(x1, y1, true)
+}
+
 export function div(
   x1: string | number,
   y1: string | number,
-  precision: number = 0,
+  precision: true | number = 0,
   base: number = 10
 ): string {
-  if (base !== 10 && precision > 0) {
+  if (base !== 10 && precision !== 0) {
     throw new Error('Cannot operate on floating point hex values')
   }
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
-  let { x, y } = floatShifts(x1, y1, precision)
+  let { x, y, extraShift } = floatShifts(
+    x1,
+    y1,
+    precision === true || precision > 0
+  )
   const xBase = isHex(x) ? 16 : 10
   const yBase = isHex(y) ? 16 : 10
   x = cropHex(x)
@@ -88,7 +103,10 @@ export function div(
   const xBN = new BN(x, xBase)
   const yBN = new BN(y, yBase)
   let out = xBN.div(yBN).toString(base)
-  out = addDecimal(out, precision)
+  out = addDecimal(out, extraShift)
+  if (typeof precision === 'number' && precision > 0) {
+    out = toFixed(out, 0, precision)
+  }
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
@@ -318,20 +336,36 @@ function cropHex(x: string): string {
   return x.replace('0x', '')
 }
 
-// Takes two floating point (base 10) numbers and finds the multiplier needed to make them both
-// operable as a integer
+/**
+ * Takes two numbers and finds the multiplier needed to make them both
+ * operable as a integer. If the numbers are floating point they must
+ * be base 10. The ShiftPair return value contains the two numbers shifted
+ * by a fixed number of decimal places and the number of decimal places
+ * they were shifted by in the `shift` param.
+ *
+ * ShiftPair.extraShift are the extra digits we add to x when doFloat is
+ * true which is specifically for div so that the numerator (x) can have
+ * enough precision to be divided by the denominator (y) since the actual
+ * math is done in integers.
+ *
+ * 1/3 would be 0 without extraShift. By adding more digits to '1' we
+ * get 1000/3 which is 333. When we convert back to float by shifting back
+ * extraDigits, we get 0.333
+ * @param xStart
+ * @param yStart
+ * @param doFloat - If true, add extra digits to x to allow for more divide precision
+ * @returns ShiftPair
+ */
 function floatShifts(
   xStart: string | number,
   yStart: string | number,
-  moreShift?: number
+  doFloat: boolean = false
 ): ShiftPair {
   let x = toBns(xStart)
   let y = toBns(yStart)
+
   let xPos: number = x.indexOf('.')
   let yPos: number = y.indexOf('.')
-
-  const xHex: boolean = isHex(x)
-  const yHex: boolean = isHex(y)
 
   if (xPos !== -1) {
     // Remove trailing zeros
@@ -345,8 +379,8 @@ function floatShifts(
     yPos = y.indexOf('.')
   }
 
-  if (xPos !== -1 || yPos !== -1 || typeof moreShift === 'number') {
-    if (xHex || yHex) {
+  if (xPos !== -1 || yPos !== -1 || doFloat) {
+    if (isHex(x) || isHex(y)) {
       throw new Error('Cannot operate on base16 float values')
     }
 
@@ -362,15 +396,18 @@ function floatShifts(
     }
 
     const shift = xShift > yShift ? xShift : yShift
-    let moreS = 0
-    if (typeof moreShift === 'number') {
-      moreS = moreShift
-    }
 
-    x = addZeros(x.replace('.', ''), shift + moreS - xShift)
+    x = addZeros(x.replace('.', ''), shift - xShift)
     y = addZeros(y.replace('.', ''), shift - yShift)
 
-    const out: ShiftPair = { x, y, shift }
+    let extraShift = 0
+    if (doFloat) {
+      const totalLength = x.length + y.length
+      extraShift = Math.max(totalLength, TARGET_BIGNUM_DIGITS)
+      x = addZeros(x, extraShift)
+    }
+
+    const out: ShiftPair = { x, y, shift, extraShift }
 
     return out
   } else {
@@ -379,6 +416,7 @@ function floatShifts(
       x,
       y,
       shift: 0,
+      extraShift: 0,
     }
     return out
   }

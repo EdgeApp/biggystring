@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- added: divf() to do floating point division with no need to specify precision
+
 ## 4.2.0 (2023-12-05)
 
 - added: New toBns function to convert JS number to big number strings
