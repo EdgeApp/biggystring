@@ -12,7 +12,7 @@ interface ShiftPair {
 }
 
 const SCI_NOTATION_REGEX = /^(-?\d*\.?\d*)e((?:\+|-)?\d+)$/
-const RECOMMENDED_DIVIDE_DIGITS = 77
+const TARGET_BIGNUM_DIGITS = 77
 // -----------------------------------------------------------------------------
 // Public
 // -----------------------------------------------------------------------------
@@ -330,8 +330,26 @@ function cropHex(x: string): string {
   return x.replace('0x', '')
 }
 
-// Takes two floating point (base 10) numbers and finds the multiplier needed to make them both
-// operable as a integer
+/**
+ * Takes two numbers and finds the multiplier needed to make them both
+ * operable as a integer. If the numbers are floating point they must
+ * be base 10. The ShiftPair return value contains the two numbers shifted
+ * by a fixed number of decimal places and the number of decimal places
+ * they were shifted by in the `shift` param.
+ *
+ * ShiftPair.extraShift are the extra digits we add to x when doFloat is
+ * true which is specifically for div so that the numerator (x) can have
+ * enough precision to be divided by the denominator (y) since the actual
+ * math is done in integers.
+ *
+ * 1/3 would be 0 without extraShift. By adding more digits to '1' we
+ * get 1000/3 which is 333. When we convert back to float by shifting back
+ * extraDigits, we get 0.333
+ * @param xStart
+ * @param yStart
+ * @param doFloat - If true, add extra digits to x to allow for more divide precision
+ * @returns ShiftPair
+ */
 function floatShifts(
   xStart: string | number,
   yStart: string | number,
@@ -382,10 +400,7 @@ function floatShifts(
     let extraShift = 0
     if (doFloat) {
       const totalLength = x.length + y.length
-      extraShift =
-        totalLength > RECOMMENDED_DIVIDE_DIGITS
-          ? totalLength
-          : RECOMMENDED_DIVIDE_DIGITS
+      extraShift = Math.max(totalLength, TARGET_BIGNUM_DIGITS)
       x = addZeros(x, extraShift)
     }
 
