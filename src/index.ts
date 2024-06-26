@@ -212,7 +212,8 @@ export const round = (x1: string | number, precision: number): string =>
   precisionAdjust('round', x1, precision)
 
 export function toBns(n: number | string): string {
-  let out = typeof n === 'number' ? n.toString() : n
+  let out = typeof n === 'number' ? n.toString() : n.replace(/^\s+|\s+$/g, '')
+
   // Handle scientific notation
   const match = out.match(SCI_NOTATION_REGEX)
 

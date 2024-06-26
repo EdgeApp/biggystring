@@ -74,6 +74,12 @@ describe('add', function () {
   it('resolve negative numbers in base 16', function () {
     assert.equal(add('-60830', '0', 16), '-0xed9e')
   })
+  it('add with spaces', function () {
+    assert.equal(add(' -2 ', '    '), '-2')
+  })
+  it('add with bad spaces', function () {
+    assert.throws(() => add(' -2 1 ', '    '))
+  })
 })
 
 describe('sub', function () {
@@ -198,6 +204,15 @@ describe('div', function () {
 describe('toBns', function () {
   it('regular number', function () {
     assert.equal(toBns(123), '123')
+  })
+  it('string number with spaces', function () {
+    assert.equal(toBns(' 123 '), '123')
+  })
+  it('spaces', function () {
+    assert.equal(toBns(' '), '')
+  })
+  it('2 spaces', function () {
+    assert.equal(toBns('  '), '')
   })
   it('scientific notation: regular numbers', function () {
     const numStr = '5e0'
