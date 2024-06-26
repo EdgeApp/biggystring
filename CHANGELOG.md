@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 4.2.1 (2024-06-25)
+
+- fixed: Crash when using strings with spaces
+
 ## 4.2.0 (2023-12-05)
 
 - added: New toBns function to convert JS number to big number strings
