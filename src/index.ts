@@ -213,6 +213,9 @@ export const round = (x1: string | number, precision: number): string =>
 
 export function toBns(n: number | string): string {
   let out = typeof n === 'number' ? n.toString() : n.replace(/^\s+|\s+$/g, '')
+  if (out === '') {
+    out = '0'
+  }
 
   // Handle scientific notation
   const match = out.match(SCI_NOTATION_REGEX)
@@ -506,7 +509,7 @@ function validate(...args: string[]): void {
     if (arg.split('-').length - 1 > 1) {
       throw new Error(`Invalid number: more than one negative sign '${arg}'`)
     }
-    if (/[^\d.\-x]/.test(arg)) {
+    if (!/^-?(?:0x[0-9A-Fa-f]+|(?:\d+(?:\.\d*)?|\.\d+))$/.test(arg)) {
       throw new Error(`Invalid number: non-number characters '${arg}'`)
     }
   }
