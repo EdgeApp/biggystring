@@ -80,6 +80,15 @@ describe('add', function () {
   it('add with bad spaces', function () {
     assert.throws(() => add(' -2 1 ', '    '))
   })
+  it('add hex numbers 0xadef0983 + 0xABF09876 = 0x159dfa1f9', function () {
+    assert.equal(add('0xadef0983', '0xABF09876', 16), '0x159dfa1f9')
+  })
+  it(`convert hex to decimal using add: 0xadef0983 + 0 = 2918123907`, function () {
+    assert.equal(add('0xadef0983', '0', 10), '2918123907')
+  })
+  it(`convert decimal to hex using add: 2918123907 + 0 = 0xadef0983`, function () {
+    assert.equal(add('2918123907', '0', 16), '0xadef0983')
+  })
 })
 
 describe('sub', function () {
@@ -142,6 +151,15 @@ describe('mul', function () {
   })
   it('resolve negative numbers in base 16', function () {
     assert.equal(mul('-60830', '1', 16), '-0xed9e')
+  })
+  it('multiply hex numbers 0xadef0983 * 0xABF09876 = 0x74d2230985a42a62', function () {
+    assert.equal(mul('0xadef0983', '0xABF09876', 16), '0x74d2230985a42a62')
+  })
+  it('convert hex to decimal using mul: 0xadef0983 * 1 = 2918123907', function () {
+    assert.equal(mul('0xadef0983', '1', 10), '2918123907')
+  })
+  it('convert decimal to hex using mul: 2918123907 * 1 = 0xadef0983', function () {
+    assert.equal(mul('2918123907', '1', 16), '0xadef0983')
   })
 })
 
@@ -209,10 +227,10 @@ describe('toBns', function () {
     assert.equal(toBns(' 123 '), '123')
   })
   it('spaces', function () {
-    assert.equal(toBns(' '), '')
+    assert.equal(toBns(' '), '0')
   })
   it('2 spaces', function () {
-    assert.equal(toBns('  '), '')
+    assert.equal(toBns('  '), '0')
   })
   it('scientific notation: regular numbers', function () {
     const numStr = '5e0'
