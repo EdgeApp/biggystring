@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- fixed: Update validate regex to exclude hex strings, integers, floats, and scientific notation
+- fixed: Update validate regex to exclude hex strings, integers and floats
 
 ## 4.2.1 (2024-06-25)
 
