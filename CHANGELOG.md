@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.2.3 (2024-07-16)
+
 - fixed: Treat '.' as zero
 
 ## 4.2.2 (2024-07-15)
