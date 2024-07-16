@@ -213,7 +213,7 @@ export const round = (x1: string | number, precision: number): string =>
 
 export function toBns(n: number | string): string {
   let out = typeof n === 'number' ? n.toString() : n.replace(/^\s+|\s+$/g, '')
-  if (out === '') {
+  if (out === '' || out === '.') {
     out = '0'
   }
 
