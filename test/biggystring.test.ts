@@ -232,6 +232,9 @@ describe('toBns', function () {
   it('2 spaces', function () {
     assert.equal(toBns('  '), '0')
   })
+  it('decimal only', function () {
+    assert.equal(toBns('.'), '0')
+  })
   it('scientific notation: regular numbers', function () {
     const numStr = '5e0'
     assert.equal(toBns(numStr), '5')

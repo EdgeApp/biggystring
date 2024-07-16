@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- fixed: Treat '.' as zero
+
 ## 4.2.2 (2024-07-15)
 
 - fixed: Update validate regex to exclude hex strings, integers and floats
