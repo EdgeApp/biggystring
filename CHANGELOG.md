@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 5.0.0 (unreleased)
+
+- changed: Replace `bn.js` dependency with native `BigInt`. Now requires Node.js >= 10.4.
+- changed: Bump TypeScript target to ES2020.
+
 ## 4.3.0 (2026-06-12)
 
 - changed: Convert the build tooling from Yarn to npm.

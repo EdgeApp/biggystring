@@ -2,8 +2,6 @@
  * Created by paul on 7/25/17.
  */
 
-import BN from 'bn.js'
-
 interface ShiftPair {
   shift: number
   x: string
@@ -22,14 +20,11 @@ export function add(
   base: number = 10
 ): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
-  let { x, y, shift } = floatShifts(x1, y1)
-  const xBase = isHex(x) ? 16 : 10
-  const yBase = isHex(y) ? 16 : 10
-  x = cropHex(x)
-  y = cropHex(y)
-  const xBN = new BN(x, xBase)
-  const yBN = new BN(y, yBase)
-  let out = xBN.add(yBN).toString(base)
+  const { x, y, shift } = floatShifts(x1, y1)
+  const xBN = parseBigInt(x)
+  const yBN = parseBigInt(y)
+  const result = xBN + yBN
+  let out = result.toString(base)
   out = addDecimal(out, shift)
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
@@ -40,14 +35,11 @@ export function mul(
   base: number = 10
 ): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
-  let { x, y, shift } = floatShifts(x1, y1)
-  const xBase = isHex(x) ? 16 : 10
-  const yBase = isHex(y) ? 16 : 10
-  x = cropHex(x)
-  y = cropHex(y)
-  const xBN = new BN(x, xBase)
-  const yBN = new BN(y, yBase)
-  let out = xBN.mul(yBN).toString(base)
+  const { x, y, shift } = floatShifts(x1, y1)
+  const xBN = parseBigInt(x)
+  const yBN = parseBigInt(y)
+  const result = xBN * yBN
+  let out = result.toString(base)
   out = addDecimal(out, shift * 2)
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
@@ -58,14 +50,11 @@ export function sub(
   base: number = 10
 ): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
-  let { x, y, shift } = floatShifts(x1, y1)
-  const xBase = isHex(x) ? 16 : 10
-  const yBase = isHex(y) ? 16 : 10
-  x = cropHex(x)
-  y = cropHex(y)
-  const xBN = new BN(x, xBase)
-  const yBN = new BN(y, yBase)
-  let out = xBN.sub(yBN).toString(base)
+  const { x, y, shift } = floatShifts(x1, y1)
+  const xBN = parseBigInt(x)
+  const yBN = parseBigInt(y)
+  const result = xBN - yBN
+  let out = result.toString(base)
   out = addDecimal(out, shift)
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
@@ -80,71 +69,38 @@ export function div(
     throw new Error('Cannot operate on floating point hex values')
   }
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
-  let { x, y } = floatShifts(x1, y1, precision)
-  const xBase = isHex(x) ? 16 : 10
-  const yBase = isHex(y) ? 16 : 10
-  x = cropHex(x)
-  y = cropHex(y)
-  const xBN = new BN(x, xBase)
-  const yBN = new BN(y, yBase)
-  let out = xBN.div(yBN).toString(base)
+  const { x, y } = floatShifts(x1, y1, precision)
+  const xBN = parseBigInt(x)
+  const yBN = parseBigInt(y)
+  const result = xBN / yBN
+  let out = result.toString(base)
   out = addDecimal(out, precision)
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
 
 export function lt(x1: string | number, y1: string | number): boolean {
-  let { x, y } = floatShifts(x1, y1)
-  const xBase = isHex(x) ? 16 : 10
-  const yBase = isHex(y) ? 16 : 10
-  x = cropHex(x)
-  y = cropHex(y)
-  const xBN = new BN(x, xBase)
-  const yBN = new BN(y, yBase)
-  return xBN.lt(yBN)
+  const { x, y } = floatShifts(x1, y1)
+  return parseBigInt(x) < parseBigInt(y)
 }
 
 export function lte(x1: string | number, y1: string | number): boolean {
-  let { x, y } = floatShifts(x1, y1)
-  const xBase = isHex(x) ? 16 : 10
-  const yBase = isHex(y) ? 16 : 10
-  x = cropHex(x)
-  y = cropHex(y)
-  const xBN = new BN(x, xBase)
-  const yBN = new BN(y, yBase)
-  return xBN.lte(yBN)
+  const { x, y } = floatShifts(x1, y1)
+  return parseBigInt(x) <= parseBigInt(y)
 }
 
 export function gt(x1: string | number, y1: string | number): boolean {
-  let { x, y } = floatShifts(x1, y1)
-  const xBase = isHex(x) ? 16 : 10
-  const yBase = isHex(y) ? 16 : 10
-  x = cropHex(x)
-  y = cropHex(y)
-  const xBN = new BN(x, xBase)
-  const yBN = new BN(y, yBase)
-  return xBN.gt(yBN)
+  const { x, y } = floatShifts(x1, y1)
+  return parseBigInt(x) > parseBigInt(y)
 }
 
 export function gte(x1: string | number, y1: string | number): boolean {
-  let { x, y } = floatShifts(x1, y1)
-  const xBase = isHex(x) ? 16 : 10
-  const yBase = isHex(y) ? 16 : 10
-  x = cropHex(x)
-  y = cropHex(y)
-  const xBN = new BN(x, xBase)
-  const yBN = new BN(y, yBase)
-  return xBN.gte(yBN)
+  const { x, y } = floatShifts(x1, y1)
+  return parseBigInt(x) >= parseBigInt(y)
 }
 
 export function eq(x1: string | number, y1: string | number): boolean {
-  let { x, y } = floatShifts(x1, y1)
-  const xBase = isHex(x) ? 16 : 10
-  const yBase = isHex(y) ? 16 : 10
-  x = cropHex(x)
-  y = cropHex(y)
-  const xBN = new BN(x, xBase)
-  const yBN = new BN(y, yBase)
-  return xBN.eq(yBN)
+  const { x, y } = floatShifts(x1, y1)
+  return parseBigInt(x) === parseBigInt(y)
 }
 
 export function min(
@@ -152,15 +108,11 @@ export function min(
   y1: string | number,
   base: number = 10
 ): string {
-  let { x, y, shift } = floatShifts(x1, y1)
-  const xBase = isHex(x) ? 16 : 10
-  const yBase = isHex(y) ? 16 : 10
-  x = cropHex(x)
-  y = cropHex(y)
-  const xBN = new BN(x, xBase)
-  const yBN = new BN(y, yBase)
+  const { x, y, shift } = floatShifts(x1, y1)
+  const xBN = parseBigInt(x)
+  const yBN = parseBigInt(y)
   let out
-  if (xBN.lte(yBN)) {
+  if (xBN <= yBN) {
     out = xBN.toString(base)
   } else {
     out = yBN.toString(base)
@@ -171,11 +123,10 @@ export function min(
 
 export function abs(x1: string | number, base: number = 10): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
-  let { x, shift } = floatShifts(x1, '0')
-  const xBase = isHex(x1) ? 16 : 10
-  x = cropHex(x)
-  const xBN = new BN(x, xBase)
-  let out = xBN.abs().toString(base)
+  const { x, shift } = floatShifts(x1, '0')
+  const xBN = parseBigInt(x)
+  const absBN = xBN < 0n ? -xBN : xBN
+  let out = absBN.toString(base)
   out = addDecimal(out, shift)
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
@@ -185,15 +136,11 @@ export function max(
   y1: string | number,
   base: number = 10
 ): string {
-  let { x, y, shift } = floatShifts(x1, y1)
-  const xBase = isHex(x) ? 16 : 10
-  const yBase = isHex(y) ? 16 : 10
-  x = cropHex(x)
-  y = cropHex(y)
-  const xBN = new BN(x, xBase)
-  const yBN = new BN(y, yBase)
+  const { x, y, shift } = floatShifts(x1, y1)
+  const xBN = parseBigInt(x)
+  const yBN = parseBigInt(y)
   let out
-  if (xBN.gte(yBN)) {
+  if (xBN >= yBN) {
     out = xBN.toString(base)
   } else {
     out = yBN.toString(base)
@@ -289,6 +236,12 @@ export function log10(x: string): number {
 // Private
 // -----------------------------------------------------------------------------
 
+// BigInt() throws on signed non-decimal literals like '-0x100' because the
+// spec's StringIntegerLiteral grammar only allows a sign on decimal numerals.
+// Strip a leading '-' and re-apply it after parsing so hex inputs work.
+const parseBigInt = (value: string): bigint =>
+  value.startsWith('-') ? -BigInt(value.slice(1)) : BigInt(value)
+
 function addDecimal(x: string, shift: number): string {
   if (shift === 0) return x
   let isNegative = false
@@ -316,10 +269,6 @@ function addZeros(val: string, numZeros: number): string {
     out += '0'
   }
   return out
-}
-
-function cropHex(x: string): string {
-  return x.replace('0x', '')
 }
 
 // Takes two floating point (base 10) numbers and finds the multiplier needed to make them both

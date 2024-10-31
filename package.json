@@ -1,6 +1,6 @@
 {
   "name": "biggystring",
-  "version": "4.3.0",
+  "version": "5.0.0",
   "description": "Full floating point big number library using regular Javascript string",
   "keywords": [
     "big",
@@ -20,6 +20,9 @@
   ],
   "types": "./lib/src/index.d.ts",
   "main": "./lib/src/index.js",
+  "engines": {
+    "node": ">=10.4"
+  },
   "files": [
     "lib/*",
     "package.json",
@@ -37,11 +40,7 @@
   "lint-staged": {
     "*.{js,ts}": "eslint"
   },
-  "dependencies": {
-    "bn.js": "^4.12.3"
-  },
   "devDependencies": {
-    "@types/bn.js": "^4.11.6",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
     "@types/node": "^18.19.0",
