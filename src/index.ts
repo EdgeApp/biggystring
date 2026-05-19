@@ -21,9 +21,9 @@ export function add(
 ): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
   const { x, y, shift } = floatShifts(x1, y1)
-  const xBN = parseBigInt(x)
-  const yBN = parseBigInt(y)
-  const result = xBN + yBN
+  const xBig = parseBigInt(x)
+  const yBig = parseBigInt(y)
+  const result = xBig + yBig
   let out = result.toString(base)
   out = addDecimal(out, shift)
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
@@ -36,9 +36,9 @@ export function mul(
 ): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
   const { x, y, shift } = floatShifts(x1, y1)
-  const xBN = parseBigInt(x)
-  const yBN = parseBigInt(y)
-  const result = xBN * yBN
+  const xBig = parseBigInt(x)
+  const yBig = parseBigInt(y)
+  const result = xBig * yBig
   let out = result.toString(base)
   out = addDecimal(out, shift * 2)
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
@@ -51,9 +51,9 @@ export function sub(
 ): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
   const { x, y, shift } = floatShifts(x1, y1)
-  const xBN = parseBigInt(x)
-  const yBN = parseBigInt(y)
-  const result = xBN - yBN
+  const xBig = parseBigInt(x)
+  const yBig = parseBigInt(y)
+  const result = xBig - yBig
   let out = result.toString(base)
   out = addDecimal(out, shift)
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
@@ -70,9 +70,9 @@ export function div(
   }
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
   const { x, y } = floatShifts(x1, y1, precision)
-  const xBN = parseBigInt(x)
-  const yBN = parseBigInt(y)
-  const result = xBN / yBN
+  const xBig = parseBigInt(x)
+  const yBig = parseBigInt(y)
+  const result = xBig / yBig
   let out = result.toString(base)
   out = addDecimal(out, precision)
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
@@ -109,13 +109,13 @@ export function min(
   base: number = 10
 ): string {
   const { x, y, shift } = floatShifts(x1, y1)
-  const xBN = parseBigInt(x)
-  const yBN = parseBigInt(y)
+  const xBig = parseBigInt(x)
+  const yBig = parseBigInt(y)
   let out
-  if (xBN <= yBN) {
-    out = xBN.toString(base)
+  if (xBig <= yBig) {
+    out = xBig.toString(base)
   } else {
-    out = yBN.toString(base)
+    out = yBig.toString(base)
   }
   out = addDecimal(out, shift)
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
@@ -124,9 +124,9 @@ export function min(
 export function abs(x1: string | number, base: number = 10): string {
   if (base !== 10 && base !== 16) throw new Error('Unsupported base')
   const { x, shift } = floatShifts(x1, '0')
-  const xBN = parseBigInt(x)
-  const absBN = xBN < 0n ? -xBN : xBN
-  let out = absBN.toString(base)
+  const xBig = parseBigInt(x)
+  const absBig = xBig < 0n ? -xBig : xBig
+  let out = absBig.toString(base)
   out = addDecimal(out, shift)
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
 }
@@ -137,13 +137,13 @@ export function max(
   base: number = 10
 ): string {
   const { x, y, shift } = floatShifts(x1, y1)
-  const xBN = parseBigInt(x)
-  const yBN = parseBigInt(y)
+  const xBig = parseBigInt(x)
+  const yBig = parseBigInt(y)
   let out
-  if (xBN >= yBN) {
-    out = xBN.toString(base)
+  if (xBig >= yBig) {
+    out = xBig.toString(base)
   } else {
-    out = yBN.toString(base)
+    out = yBig.toString(base)
   }
   out = addDecimal(out, shift)
   return base === 10 ? out : out.replace(/^(-)?/, '$10x')
