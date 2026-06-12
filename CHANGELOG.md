@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- changed: Convert the build tooling from Yarn to npm.
+- security: Upgrade dependencies per Socket security recommendations.
+
 ## 4.2.3 (2024-07-16)
 
 - fixed: Treat '.' as zero
