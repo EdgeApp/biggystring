@@ -8,6 +8,7 @@
 - changed: Bump TypeScript target to ES2020.
 - changed: Optimize `floatShifts` to stop re-normalizing operands through `toBns` inside `isHex` and to avoid per-call allocations in the hex check, scientific-notation match, and `validate`. Roughly halves core operation cost.
 - changed: Optimize `precisionAdjust` (floor/ceil/round) to check rounding digits directly instead of routing them through the full bignum API, and rewrite `trimEnd` as a single index scan instead of four regex passes. About 1.6x faster on rounding-heavy and decimal-heavy workloads.
+- added: Opt-in timing instrumentation (`biggyTimer`, `getBiggyStats`, `printBiggyStats`, `resetBiggyStats`) to measure wall-clock time spent inside the library. Disabled by default.
 
 ## 4.3.0 (2026-06-12)
 

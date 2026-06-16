@@ -11,6 +11,48 @@ interface ShiftPair {
 const SCI_NOTATION_REGEX = /^(-?\d*\.?\d*)e((?:\+|-)?\d+)$/
 
 // -----------------------------------------------------------------------------
+// Timing instrumentation
+// -----------------------------------------------------------------------------
+//
+// Accumulates wall-clock time spent inside the biggystring public API so the
+// cost of the library can be measured and compared across implementations
+// (bn.js vs native BigInt) and across environments (React Native Hermes vs the
+// plugin WebView). Disabled by default so it adds no measurable cost to normal
+// use; call biggyTimer('start') to begin collecting and periodic logging.
+//
+// Prefers the high-resolution performance.now() when present (always in a
+// WebView, and in modern Hermes) and falls back to Date.now() elsewhere.
+
+const now: () => number =
+  typeof performance !== 'undefined' && typeof performance.now === 'function'
+    ? () => performance.now()
+    : () => Date.now()
+
+let biggyEnabled = false
+let biggyDepth = 0
+let biggyEntryTime = 0
+let biggyStartTime = 0
+let biggyTotalTime = 0
+let bigintTotalTime = 0
+let biggyCallCount = 0
+let biggyInterval: ReturnType<typeof setInterval> | undefined
+
+// Re-entrancy guarded so nested public calls (e.g. round -> add) are counted
+// once, yielding the true total wall time spent servicing biggystring calls.
+function time<T>(fn: () => T): T {
+  if (!biggyEnabled) return fn()
+  if (biggyDepth === 0) biggyEntryTime = now()
+  biggyDepth++
+  try {
+    return fn()
+  } finally {
+    biggyCallCount++
+    biggyDepth--
+    if (biggyDepth === 0) biggyTotalTime += now() - biggyEntryTime
+  }
+}
+
+// -----------------------------------------------------------------------------
 // Public
 // -----------------------------------------------------------------------------
 
@@ -19,14 +61,16 @@ export function add(
   y1: string | number,
   base: number = 10
 ): string {
-  if (base !== 10 && base !== 16) throw new Error('Unsupported base')
-  const { x, y, shift } = floatShifts(x1, y1)
-  const xBig = parseBigInt(x)
-  const yBig = parseBigInt(y)
-  const result = xBig + yBig
-  let out = result.toString(base)
-  out = addDecimal(out, shift)
-  return base === 10 ? out : out.replace(/^(-)?/, '$10x')
+  return time(() => {
+    if (base !== 10 && base !== 16) throw new Error('Unsupported base')
+    const { x, y, shift } = floatShifts(x1, y1)
+    const xBig = parseBigInt(x)
+    const yBig = parseBigInt(y)
+    const result = xBig + yBig
+    let out = result.toString(base)
+    out = addDecimal(out, shift)
+    return base === 10 ? out : out.replace(/^(-)?/, '$10x')
+  })
 }
 
 export function mul(
@@ -34,14 +78,16 @@ export function mul(
   y1: string | number,
   base: number = 10
 ): string {
-  if (base !== 10 && base !== 16) throw new Error('Unsupported base')
-  const { x, y, shift } = floatShifts(x1, y1)
-  const xBig = parseBigInt(x)
-  const yBig = parseBigInt(y)
-  const result = xBig * yBig
-  let out = result.toString(base)
-  out = addDecimal(out, shift * 2)
-  return base === 10 ? out : out.replace(/^(-)?/, '$10x')
+  return time(() => {
+    if (base !== 10 && base !== 16) throw new Error('Unsupported base')
+    const { x, y, shift } = floatShifts(x1, y1)
+    const xBig = parseBigInt(x)
+    const yBig = parseBigInt(y)
+    const result = xBig * yBig
+    let out = result.toString(base)
+    out = addDecimal(out, shift * 2)
+    return base === 10 ? out : out.replace(/^(-)?/, '$10x')
+  })
 }
 
 export function sub(
@@ -49,14 +95,16 @@ export function sub(
   y1: string | number,
   base: number = 10
 ): string {
-  if (base !== 10 && base !== 16) throw new Error('Unsupported base')
-  const { x, y, shift } = floatShifts(x1, y1)
-  const xBig = parseBigInt(x)
-  const yBig = parseBigInt(y)
-  const result = xBig - yBig
-  let out = result.toString(base)
-  out = addDecimal(out, shift)
-  return base === 10 ? out : out.replace(/^(-)?/, '$10x')
+  return time(() => {
+    if (base !== 10 && base !== 16) throw new Error('Unsupported base')
+    const { x, y, shift } = floatShifts(x1, y1)
+    const xBig = parseBigInt(x)
+    const yBig = parseBigInt(y)
+    const result = xBig - yBig
+    let out = result.toString(base)
+    out = addDecimal(out, shift)
+    return base === 10 ? out : out.replace(/^(-)?/, '$10x')
+  })
 }
 
 export function div(
@@ -65,42 +113,54 @@ export function div(
   precision: number = 0,
   base: number = 10
 ): string {
-  if (base !== 10 && precision > 0) {
-    throw new Error('Cannot operate on floating point hex values')
-  }
-  if (base !== 10 && base !== 16) throw new Error('Unsupported base')
-  const { x, y } = floatShifts(x1, y1, precision)
-  const xBig = parseBigInt(x)
-  const yBig = parseBigInt(y)
-  const result = xBig / yBig
-  let out = result.toString(base)
-  out = addDecimal(out, precision)
-  return base === 10 ? out : out.replace(/^(-)?/, '$10x')
+  return time(() => {
+    if (base !== 10 && precision > 0) {
+      throw new Error('Cannot operate on floating point hex values')
+    }
+    if (base !== 10 && base !== 16) throw new Error('Unsupported base')
+    const { x, y } = floatShifts(x1, y1, precision)
+    const xBig = parseBigInt(x)
+    const yBig = parseBigInt(y)
+    const result = xBig / yBig
+    let out = result.toString(base)
+    out = addDecimal(out, precision)
+    return base === 10 ? out : out.replace(/^(-)?/, '$10x')
+  })
 }
 
 export function lt(x1: string | number, y1: string | number): boolean {
-  const { x, y } = floatShifts(x1, y1)
-  return parseBigInt(x) < parseBigInt(y)
+  return time(() => {
+    const { x, y } = floatShifts(x1, y1)
+    return parseBigInt(x) < parseBigInt(y)
+  })
 }
 
 export function lte(x1: string | number, y1: string | number): boolean {
-  const { x, y } = floatShifts(x1, y1)
-  return parseBigInt(x) <= parseBigInt(y)
+  return time(() => {
+    const { x, y } = floatShifts(x1, y1)
+    return parseBigInt(x) <= parseBigInt(y)
+  })
 }
 
 export function gt(x1: string | number, y1: string | number): boolean {
-  const { x, y } = floatShifts(x1, y1)
-  return parseBigInt(x) > parseBigInt(y)
+  return time(() => {
+    const { x, y } = floatShifts(x1, y1)
+    return parseBigInt(x) > parseBigInt(y)
+  })
 }
 
 export function gte(x1: string | number, y1: string | number): boolean {
-  const { x, y } = floatShifts(x1, y1)
-  return parseBigInt(x) >= parseBigInt(y)
+  return time(() => {
+    const { x, y } = floatShifts(x1, y1)
+    return parseBigInt(x) >= parseBigInt(y)
+  })
 }
 
 export function eq(x1: string | number, y1: string | number): boolean {
-  const { x, y } = floatShifts(x1, y1)
-  return parseBigInt(x) === parseBigInt(y)
+  return time(() => {
+    const { x, y } = floatShifts(x1, y1)
+    return parseBigInt(x) === parseBigInt(y)
+  })
 }
 
 export function min(
@@ -108,27 +168,31 @@ export function min(
   y1: string | number,
   base: number = 10
 ): string {
-  const { x, y, shift } = floatShifts(x1, y1)
-  const xBig = parseBigInt(x)
-  const yBig = parseBigInt(y)
-  let out
-  if (xBig <= yBig) {
-    out = xBig.toString(base)
-  } else {
-    out = yBig.toString(base)
-  }
-  out = addDecimal(out, shift)
-  return base === 10 ? out : out.replace(/^(-)?/, '$10x')
+  return time(() => {
+    const { x, y, shift } = floatShifts(x1, y1)
+    const xBig = parseBigInt(x)
+    const yBig = parseBigInt(y)
+    let out
+    if (xBig <= yBig) {
+      out = xBig.toString(base)
+    } else {
+      out = yBig.toString(base)
+    }
+    out = addDecimal(out, shift)
+    return base === 10 ? out : out.replace(/^(-)?/, '$10x')
+  })
 }
 
 export function abs(x1: string | number, base: number = 10): string {
-  if (base !== 10 && base !== 16) throw new Error('Unsupported base')
-  const { x, shift } = floatShifts(x1, '0')
-  const xBig = parseBigInt(x)
-  const absBig = xBig < 0n ? -xBig : xBig
-  let out = absBig.toString(base)
-  out = addDecimal(out, shift)
-  return base === 10 ? out : out.replace(/^(-)?/, '$10x')
+  return time(() => {
+    if (base !== 10 && base !== 16) throw new Error('Unsupported base')
+    const { x, shift } = floatShifts(x1, '0')
+    const xBig = parseBigInt(x)
+    const absBig = xBig < 0n ? -xBig : xBig
+    let out = absBig.toString(base)
+    out = addDecimal(out, shift)
+    return base === 10 ? out : out.replace(/^(-)?/, '$10x')
+  })
 }
 
 export function max(
@@ -136,47 +200,51 @@ export function max(
   y1: string | number,
   base: number = 10
 ): string {
-  const { x, y, shift } = floatShifts(x1, y1)
-  const xBig = parseBigInt(x)
-  const yBig = parseBigInt(y)
-  let out
-  if (xBig >= yBig) {
-    out = xBig.toString(base)
-  } else {
-    out = yBig.toString(base)
-  }
-  out = addDecimal(out, shift)
-  return base === 10 ? out : out.replace(/^(-)?/, '$10x')
+  return time(() => {
+    const { x, y, shift } = floatShifts(x1, y1)
+    const xBig = parseBigInt(x)
+    const yBig = parseBigInt(y)
+    let out
+    if (xBig >= yBig) {
+      out = xBig.toString(base)
+    } else {
+      out = yBig.toString(base)
+    }
+    out = addDecimal(out, shift)
+    return base === 10 ? out : out.replace(/^(-)?/, '$10x')
+  })
 }
 
 export const floor = (x1: string | number, precision: number): string =>
-  precisionAdjust('floor', x1, precision)
+  time(() => precisionAdjust('floor', x1, precision))
 
 export const ceil = (x1: string | number, precision: number): string =>
-  precisionAdjust('ceil', x1, precision)
+  time(() => precisionAdjust('ceil', x1, precision))
 
 export const round = (x1: string | number, precision: number): string =>
-  precisionAdjust('round', x1, precision)
+  time(() => precisionAdjust('round', x1, precision))
 
 export function toBns(n: number | string): string {
-  let out = typeof n === 'number' ? n.toString() : n.replace(/^\s+|\s+$/g, '')
-  if (out === '' || out === '.') {
-    out = '0'
-  }
-
-  // Handle scientific notation (skip the regex unless an 'e' is present)
-  if (out.indexOf('e') !== -1) {
-    const match = out.match(SCI_NOTATION_REGEX)
-    if (match != null) {
-      const base = match[1]
-      const exponent = parseInt(match[2])
-      out = sciNotation(base, exponent)
+  return time(() => {
+    let out = typeof n === 'number' ? n.toString() : n.replace(/^\s+|\s+$/g, '')
+    if (out === '' || out === '.') {
+      out = '0'
     }
-  }
 
-  validate(out)
+    // Handle scientific notation (skip the regex unless an 'e' is present)
+    if (out.indexOf('e') !== -1) {
+      const match = out.match(SCI_NOTATION_REGEX)
+      if (match != null) {
+        const base = match[1]
+        const exponent = parseInt(match[2])
+        out = sciNotation(base, exponent)
+      }
+    }
 
-  return out
+    validate(out)
+
+    return out
+  })
 }
 
 export function toFixed(
@@ -184,53 +252,119 @@ export function toFixed(
   minPrecision: number = 2,
   maxPrecision: number = 8
 ): string {
-  let x = toBns(x1)
+  return time(() => {
+    let x = toBns(x1)
 
-  let negative = false
-  let out = ''
+    let negative = false
+    let out = ''
 
-  if (x.includes('-')) {
-    negative = true
-    // Remove any leading '-' signs
-    x = x.replace(/^-+/, '')
-  }
-  x = trimEnd(x)
-
-  // Number of decimal places number has
-  const decimalPos = x.indexOf('.')
-  if (decimalPos === -1) {
-    out = x + '.' + addZeros('', minPrecision)
-  } else {
-    const numDecimals = x.length - decimalPos - 1
-    if (numDecimals > maxPrecision) {
-      out = x.substr(0, x.length - (numDecimals - maxPrecision))
-    } else if (numDecimals < minPrecision) {
-      out = x + addZeros('', minPrecision - numDecimals)
-    } else {
-      out = x
+    if (x.includes('-')) {
+      negative = true
+      // Remove any leading '-' signs
+      x = x.replace(/^-+/, '')
     }
-  }
+    x = trimEnd(x)
 
-  // Remove trailing "." if there is one
-  out = out.replace(/\.+$/, '')
+    // Number of decimal places number has
+    const decimalPos = x.indexOf('.')
+    if (decimalPos === -1) {
+      out = x + '.' + addZeros('', minPrecision)
+    } else {
+      const numDecimals = x.length - decimalPos - 1
+      if (numDecimals > maxPrecision) {
+        out = x.substr(0, x.length - (numDecimals - maxPrecision))
+      } else if (numDecimals < minPrecision) {
+        out = x + addZeros('', minPrecision - numDecimals)
+      } else {
+        out = x
+      }
+    }
 
-  if (negative && out !== '0') {
-    out = '-' + out
-  }
-  return out
+    // Remove trailing "." if there is one
+    out = out.replace(/\.+$/, '')
+
+    if (negative && out !== '0') {
+      out = '-' + out
+    }
+    return out
+  })
 }
 
 export function log10(x: string): number {
-  if (!(x.match(/^[0-1]+$/g) !== null)) {
-    throw new Error('InvalidLogInputValue: Must be a power of 10')
+  return time(() => {
+    if (!(x.match(/^[0-1]+$/g) !== null)) {
+      throw new Error('InvalidLogInputValue: Must be a power of 10')
+    }
+    if (!x.startsWith('1')) {
+      throw new Error('InvalidLogInputValue: Must not have leading zeros')
+    }
+    if ((x.match(/1/g) || []).length > 1) {
+      throw new Error('InvalidLogInputValue: Must be power of 10.')
+    }
+    return (x.match(/0/g) || []).length
+  })
+}
+
+// -----------------------------------------------------------------------------
+// Timing API
+// -----------------------------------------------------------------------------
+
+export interface BiggyStats {
+  totalRunningMs: number
+  biggystringMs: number
+  bigintMs: number
+  outsideBigintMs: number
+  callCount: number
+}
+
+export function getBiggyStats(): BiggyStats {
+  const totalRunningMs = biggyStartTime === 0 ? 0 : now() - biggyStartTime
+  return {
+    totalRunningMs,
+    biggystringMs: biggyTotalTime,
+    bigintMs: bigintTotalTime,
+    outsideBigintMs: biggyTotalTime - bigintTotalTime,
+    callCount: biggyCallCount
   }
-  if (!x.startsWith('1')) {
-    throw new Error('InvalidLogInputValue: Must not have leading zeros')
+}
+
+export function resetBiggyStats(): void {
+  biggyStartTime = now()
+  biggyTotalTime = 0
+  bigintTotalTime = 0
+  biggyCallCount = 0
+}
+
+export function printBiggyStats(): void {
+  const s = getBiggyStats()
+  const pct = (n: number, d: number): string =>
+    d === 0 ? 'n/a' : `${((n / d) * 100).toFixed(2)}%`
+  console.log('--- biggystring stats ---')
+  console.log('  total running time (ms):', s.totalRunningMs.toFixed(3))
+  console.log('  biggystring time   (ms):', s.biggystringMs.toFixed(3))
+  console.log('  inside BigInt time (ms):', s.bigintMs.toFixed(3))
+  console.log('  outside BigInt time(ms):', s.outsideBigintMs.toFixed(3))
+  console.log('  total calls            :', s.callCount)
+  console.log('  biggystring / running  :', pct(s.biggystringMs, s.totalRunningMs))
+  console.log('  BigInt / running       :', pct(s.bigintMs, s.totalRunningMs))
+  console.log('  BigInt / biggystring   :', pct(s.bigintMs, s.biggystringMs))
+}
+
+// Begin or end a measurement session. While running, stats accumulate and are
+// printed to the console every 5 seconds; 'stop' prints a final summary.
+export function biggyTimer(action: 'start' | 'stop'): void {
+  if (action === 'start') {
+    biggyEnabled = true
+    resetBiggyStats()
+    biggyInterval = setInterval(printBiggyStats, 5000)
+    console.log('biggyTimer started')
+  } else {
+    if (biggyInterval != null) clearInterval(biggyInterval)
+    biggyInterval = undefined
+    printBiggyStats()
+    biggyEnabled = false
+    console.log('biggyTimer stopped')
   }
-  if ((x.match(/1/g) || []).length > 1) {
-    throw new Error('InvalidLogInputValue: Must be power of 10.')
-  }
-  return (x.match(/0/g) || []).length
 }
 
 // -----------------------------------------------------------------------------
@@ -240,8 +374,15 @@ export function log10(x: string): number {
 // BigInt() throws on signed non-decimal literals like '-0x100' because the
 // spec's StringIntegerLiteral grammar only allows a sign on decimal numerals.
 // Strip a leading '-' and re-apply it after parsing so hex inputs work.
-const parseBigInt = (value: string): bigint =>
-  value.startsWith('-') ? -BigInt(value.slice(1)) : BigInt(value)
+const parseBigInt = (value: string): bigint => {
+  if (!biggyEnabled) {
+    return value.startsWith('-') ? -BigInt(value.slice(1)) : BigInt(value)
+  }
+  const start = now()
+  const result = value.startsWith('-') ? -BigInt(value.slice(1)) : BigInt(value)
+  bigintTotalTime += now() - start
+  return result
+}
 
 function addDecimal(x: string, shift: number): string {
   if (shift === 0) return x
