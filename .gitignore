@@ -62,3 +62,6 @@ typings/
 
 # Libs
 lib/
+
+# AI
+.claude

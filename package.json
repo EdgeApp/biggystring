@@ -1,6 +1,6 @@
 {
   "name": "biggystring",
-  "version": "4.3.0",
+  "version": "5.0.0",
   "description": "Full floating point big number library using regular Javascript string",
   "keywords": [
     "big",
@@ -20,6 +20,9 @@
   ],
   "types": "./lib/src/index.d.ts",
   "main": "./lib/src/index.js",
+  "engines": {
+    "node": ">=10.4"
+  },
   "files": [
     "lib/*",
     "package.json",
@@ -28,7 +31,7 @@
   "scripts": {
     "build": "tsc",
     "cover": "nyc --reporter=lcov --reporter=text --reporter=html --extension .js npm test",
-    "lint": "eslint --ext .js,.jsx,.ts,.tsx ./src",
+    "lint": "eslint --ext .ts ./src",
     "fix": "npm run lint -- --fix",
     "precommit": "lint-staged && npm run build && npm test",
     "prepare": "husky install && npm run build",
@@ -37,26 +40,19 @@
   "lint-staged": {
     "*.{js,ts}": "eslint"
   },
-  "dependencies": {
-    "bn.js": "^4.12.3"
-  },
   "devDependencies": {
-    "@types/bn.js": "^4.11.6",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^14.0.23",
-    "@typescript-eslint/eslint-plugin": ">=2.0.0",
-    "@typescript-eslint/parser": "^3.0.0",
-    "babel-eslint": "^8.0.2",
+    "@types/node": "^18.19.0",
+    "@typescript-eslint/eslint-plugin": "^4.33.0",
+    "@typescript-eslint/parser": "^4.33.0",
     "chai": "^4.3.7",
-    "eslint": ">=7.15.0",
-    "eslint-config-standard-kit": ">=0.14.4",
+    "eslint": "^7.32.0",
+    "eslint-config-standard-kit": "^0.14.4",
     "eslint-plugin-import": ">=2.18.0",
-    "eslint-plugin-json-files": "^1.4.0",
     "eslint-plugin-node": ">=9.1.0",
-    "eslint-plugin-prettier": ">=3.0.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-promise": ">=4.2.1",
-    "eslint-plugin-react": ">=7.14.2",
     "eslint-plugin-simple-import-sort": ">=4.0.0",
     "eslint-plugin-standard": ">=4.0.0",
     "husky": "^8.0.2",
@@ -64,7 +60,6 @@
     "mocha": "^10.6.0",
     "prettier": "^2.0.5",
     "sucrase": "^3.12.1",
-    "ts-node": "^8.6.2",
-    "typescript": "^3.8.2"
+    "typescript": "5.0.4"
   }
 }
