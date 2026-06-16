@@ -370,7 +370,7 @@ function precisionAdjust(
 
   if (type === 'round') {
     const checkValue = combined[checkIndex] ?? '0'
-    if (gte(checkValue, '5')) {
+    if (checkValue >= '5') {
       type = 'ceil'
     } else {
       type = 'floor'
@@ -381,7 +381,7 @@ function precisionAdjust(
   const numZeros = Math.max(combined.length - checkIndex + 1, 0)
   const zeroString = new Array(numZeros).join('0')
   let outCombined = combined.substring(0, checkIndex) + zeroString
-  const bumpUp = gt(combined.substring(checkIndex), '0')
+  const bumpUp = /[1-9]/.test(combined.substring(checkIndex))
   if (type === 'ceil' && bumpUp) {
     const addValue = '1' + zeroString
 
@@ -419,25 +419,21 @@ function sciNotation(x1: string, exponent: number): string {
   return mul(x1, magnitude)
 }
 
-// Remove starting and trailing zeros and decimal
+// Remove starting and trailing zeros and decimal, in a single index scan.
 function trimEnd(val: string): string {
-  // Remove starting zeros if there are any
-  let out = val.replace(/^0+/, '')
-  out = out.replace(/^\.+/, '0.')
-  if (out.includes('.')) {
-    // Remove trailing zeros
-    out = out.replace(/0+$/, '')
-
-    // Remove trailing "." if there is one
-    out = out.replace(/\.+$/, '')
-    if (out === '') {
-      out = '0'
-    }
+  const dot = val.indexOf('.')
+  let start = 0
+  while (start < val.length && val.charCodeAt(start) === 48) start++
+  if (dot === -1) {
+    // Integer: keep trailing zeros, drop leading zeros, empty becomes '0'.
+    return start >= val.length ? '0' : val.slice(start)
   }
-  if (out === '') {
-    out = '0'
-  }
-  return out
+  let end = val.length
+  while (end > dot && val.charCodeAt(end - 1) === 48) end--
+  if (end - 1 === dot) end = dot
+  let intPart = val.slice(start, dot)
+  if (intPart === '') intPart = '0'
+  return end <= dot ? intPart : intPart + val.slice(dot, end)
 }
 
 function validate(...args: string[]): void {
