@@ -6,6 +6,7 @@
 
 - changed: Replace `bn.js` dependency with native `BigInt`. Now requires Node.js >= 10.4.
 - changed: Bump TypeScript target to ES2020.
+- changed: Optimize `floatShifts` to stop re-normalizing operands through `toBns` inside `isHex` and to avoid per-call allocations in the hex check, scientific-notation match, and `validate`. Roughly halves core operation cost.
 
 ## 4.3.0 (2026-06-12)
 

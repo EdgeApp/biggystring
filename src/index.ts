@@ -164,13 +164,14 @@ export function toBns(n: number | string): string {
     out = '0'
   }
 
-  // Handle scientific notation
-  const match = out.match(SCI_NOTATION_REGEX)
-
-  if (match != null) {
-    const base = match[1]
-    const exponent = parseInt(match[2])
-    out = sciNotation(base, exponent)
+  // Handle scientific notation (skip the regex unless an 'e' is present)
+  if (out.indexOf('e') !== -1) {
+    const match = out.match(SCI_NOTATION_REGEX)
+    if (match != null) {
+      const base = match[1]
+      const exponent = parseInt(match[2])
+      out = sciNotation(base, exponent)
+    }
   }
 
   validate(out)
@@ -283,8 +284,8 @@ function floatShifts(
   let xPos: number = x.indexOf('.')
   let yPos: number = y.indexOf('.')
 
-  const xHex: boolean = isHex(x)
-  const yHex: boolean = isHex(y)
+  const xHex: boolean = isHexStr(x)
+  const yHex: boolean = isHexStr(y)
 
   if (xPos !== -1) {
     // Remove trailing zeros
@@ -337,22 +338,11 @@ function floatShifts(
   }
 }
 
-function isHex(x1: string | number): boolean {
-  const x = toBns(x1)
-  if (
-    x.startsWith('0x') ||
-    x.startsWith('-0x') ||
-    x.toLowerCase().includes('a') ||
-    x.toLowerCase().includes('b') ||
-    x.toLowerCase().includes('c') ||
-    x.toLowerCase().includes('d') ||
-    x.toLowerCase().includes('e') ||
-    x.toLowerCase().includes('f')
-  ) {
-    return true
-  } else {
-    return false
-  }
+// Expects an already-normalized (toBns) string. A normalized base-10 number
+// only contains [0-9.-], so any hex marker ('x' from a 0x prefix or an a-f
+// digit) means the value is base 16.
+function isHexStr(x: string): boolean {
+  return /[a-fx]/i.test(x)
 }
 
 function precisionAdjust(
@@ -452,10 +442,10 @@ function trimEnd(val: string): string {
 
 function validate(...args: string[]): void {
   for (const arg of args) {
-    if (arg.split('.').length - 1 > 1) {
+    if (arg.indexOf('.') !== arg.lastIndexOf('.')) {
       throw new Error(`Invalid number: more than one decimal point '${arg}'`)
     }
-    if (arg.split('-').length - 1 > 1) {
+    if (arg.indexOf('-') !== arg.lastIndexOf('-')) {
       throw new Error(`Invalid number: more than one negative sign '${arg}'`)
     }
     if (!/^-?(?:0x[0-9A-Fa-f]+|(?:\d+(?:\.\d*)?|\.\d+))$/.test(arg)) {
